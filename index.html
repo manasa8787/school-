@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق مدرستي - النظام الإداري الموحد السحابي</title>
+    <title>منصة الفيزياء الذكية - السادس العلمي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -110,7 +110,7 @@
         .status-present { color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 6px; border-radius: 6px; }
         .status-absent { color: #dc2626; font-weight: bold; background: #fee2e2; padding: 2px 6px; border-radius: 6px; }
 
-        /* تصميم الهوية الاحترافية المحدث بأسلوب Apple Style */
+        /* تصميم الهوية الاحترافية بأسلوب Apple Style */
         .identity-card-wrapper { display: none; background: white; padding: 20px; border-radius: 24px; border: 1px solid #edf2f7; text-align: center; margin-bottom: 20px; }
         .student-id-card-vertical { width: 290px; height: 460px; background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 24px; padding: 22px; margin: 15px auto; text-align: center; position: relative; border: 2.5px solid #3b82f6; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25); }
         .id-vertical-header { width: 100%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; }
@@ -137,25 +137,25 @@
 
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
-            <div class="login-logo"><i class="fas fa-shield-alt"></i></div>
+            <div class="login-logo"><i class="fas fa-atom"></i></div>
             <h2 style="font-size:18px; font-weight:900; margin-bottom:5px;">بوابة الدخول الموحدة السحابية</h2>
-            <p style="font-size:12px; color:#64748b; margin-bottom:20px;">نظام مدرستي الإداري الذكي</p>
+            <p style="font-size:12px; color:#64748b; margin-bottom:20px;">منصة الفيزياء الذكية - السادس العلمي</p>
             
             <div class="login-tabs">
-                <button class="login-tab-btn active" onclick="switchLoginTab('manager')">دخول المدير</button>
-                <button class="login-tab-btn" onclick="switchLoginTab('teacher')">دخول المدرس</button>
+                <button class="login-tab-btn active" id="tabManager" onclick="switchLoginTab('manager')">دخول المدير</button>
+                <button class="login-tab-btn" id="tabTeacher" onclick="switchLoginTab('teacher')">دخول المدرس</button>
             </div>
 
             <div class="login-form-wrapper active" id="managerLoginForm">
                 <div class="form-group" style="text-align:right;">
                     <label>البريد الإلكتروني للمدير</label>
-                    <input type="email" id="managerEmail" placeholder="example@gmail.com">
+                    <input type="email" id="managerEmail" placeholder="ادخل البريد الإلكتروني الخاص بك...">
                 </div>
                 <div class="form-group" style="text-align:right;">
                     <label>كلمة المرور</label>
                     <input type="password" id="managerPassword" placeholder="••••••••">
                 </div>
-                <button class="btn-action btn-dark" style="margin-top:10px;" onclick="attemptManagerLogin()"><i class="fas fa-sign-in-alt"></i> تسجيل دخول كمدير</button>
+                <button type="button" class="btn-action btn-dark" style="margin-top:10px;" onclick="attemptManagerLogin()"><i class="fas fa-sign-in-alt"></i> تسجيل دخول كمدير</button>
             </div>
 
             <div class="login-form-wrapper" id="teacherLoginForm">
@@ -163,7 +163,7 @@
                     <label>الاسم الثلاثي واللقب للمدرس</label>
                     <input type="text" id="teacherLoginName" placeholder="اكتب اسمك الثلاثي المسجل بالنظام...">
                 </div>
-                <button class="btn-action btn-purple" style="margin-top:10px;" onclick="attemptTeacherLogin()"><i class="fas fa-chalkboard-teacher"></i> دخول المدرس</button>
+                <button type="button" class="btn-action btn-purple" style="margin-top:10px;" onclick="attemptTeacherLogin()"><i class="fas fa-chalkboard-teacher"></i> دخول المدرس</button>
             </div>
         </div>
     </div>
@@ -171,12 +171,12 @@
     <div class="main-app-content" id="mainAppContent">
         <div class="app-header">
             <div class="welcome-text">
-                <h2 id="topSchoolName">ثانوية المتميزين الذكية</h2>
+                <h2 id="topSchoolName">منصة الفيزياء - السادس العلمي</h2>
                 <p id="userRoleSubtext">نظام الإدارة المدرسية الموحد الشامل</p>
             </div>
             <div class="header-actions">
                 <button class="logout-btn" onclick="logoutSystem()"><i class="fas fa-power-off"></i> خروج</button>
-                <div class="user-avatar-badge" id="roleBadgeIcon"><i class="fas fa-school"></i></div>
+                <div class="user-avatar-badge" id="roleBadgeIcon"><i class="fas fa-graduation-cap"></i></div>
             </div>
         </div>
 
@@ -231,18 +231,9 @@
                             <div class="form-group">
                                 <label>المرحلة الدراسية</label>
                                 <select id="studentLevel" required>
-                                    <option value="الأول الابتدائي">الأول الابتدائي</option>
-                                    <option value="الثاني الابتدائي">الثاني الابتدائي</option>
-                                    <option value="الثالث الابتدائي">الثالث الابتدائي</option>
-                                    <option value="الرابع الابتدائي">الرابع الابتدائي</option>
-                                    <option value="الخامس الابتدائي">الخامس الابتدائي</option>
-                                    <option value="السادس الابتدائي">السادس الابتدائي</option>
-                                    <option value="الأول المتوسط">الأول المتوسط</option>
-                                    <option value="الثاني المتوسط">الثاني المتوسط</option>
-                                    <option value="الثالث المتوسط">الثالث المتوسط</option>
+                                    <option value="السادس العلمي">السادس العلمي</option>
+                                    <option value="الخامس العلمي">الخامس العلمي</option>
                                     <option value="الرابع الإعدادي">الرابع الإعدادي</option>
-                                    <option value="الخامس الإعدادي">الخامس الإعدادي</option>
-                                    <option value="السادس الإعدادي">السادس الإعدادي</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -303,8 +294,8 @@
                     <h3 style="font-size:14px; margin-bottom:10px; color:#1e293b;"><i class="fas fa-id-badge"></i> هوية الطالب الاحترافية المعتمدة لداخل القاعة</h3>
                     <div class="student-id-card-vertical" id="printableIdCard">
                         <div class="id-vertical-header">
-                            <div class="id-school-logo"><i class="fas fa-school"></i></div>
-                            <h4 id="idCardSchoolLabel">ثانوية المتميزين الذكية</h4>
+                            <div class="id-school-logo"><i class="fas fa-atom"></i></div>
+                            <h4 id="idCardSchoolLabel">منصة الفيزياء - السادس العلمي</h4>
                             <span id="idCardRoom" class="room-badge">-</span>
                         </div>
                         <div class="id-vertical-photo-box">
@@ -337,13 +328,15 @@
                             <div class="form-group">
                                 <label>الاختصاص الدراسي (المادة)</label>
                                 <select id="teacherSpec" required>
+                                    <option value="الفيزياء">الفيزياء</option>
+                                    <option value="الكيمياء">الكيمياء</option>
+                                    <option value="الأحياء">الأحياء</option>
+                                    <option value="الرياضيات">الرياضيات</option>
                                     <option value="اللغة العربية">اللغة العربية</option>
                                     <option value="اللغة الإنجليزية">اللغة الإنجليزية</option>
-                                    <option value="الرياضيات">الرياضيات</option>
-                                    <option value="الكيمياء">الكيمياء</option>
-                                    <option value="الفيزياء">الفيزياء</option>
-                                    <option value="الأحياء">الأحياء</option>
+                                    <option value="التربية الإسلامية">التربية الإسلامية</option>
                                     <option value="الحاسوب">الحاسوب</option>
+                                    <option value="اللغة الفرنسية">اللغة الفرنسية</option>
                                 </select>
                             </div>
                         </div>
@@ -498,12 +491,12 @@
                 <div class="form-panel">
                     <div class="form-title teal"><i class="fas fa-edit"></i> تخصيص معلومات الهيدر والواجهات</div>
                     <div class="form-group">
-                        <label>اسم المدرسة الرسمي (يظهر بالأعلى وفي الهويات)</label>
-                        <input type="text" id="inputSchoolName" value="ثانوية المتميزين الذكية" oninput="updateSchoolName()">
+                        <label>اسم المنصة الرسمي (يظهر بالأعلى وفي الهويات)</label>
+                        <input type="text" id="inputSchoolName" value="منصة الفيزياء - السادس العلمي" oninput="updateSchoolName()">
                     </div>
                     
                     <div class="form-group" style="margin-top: 15px;">
-                        <label style="color:#0d9488; font-weight:bold;"><i class="fas fa-door-open"></i> إدارة قاعات المدرسة الحالية (افصل بينها بفاصلة ,)</label>
+                        <label style="color:#0d9488; font-weight:bold;"><i class="fas fa-door-open"></i> إدارة قاعات المعهد الحالية (افصل بينها بفاصلة ,)</label>
                         <input type="text" id="schoolRoomsConfig" value="قاعة 1, قاعة 2, قاعة 3, قاعة 4" onchange="refreshSystemRooms()">
                     </div>
                     
@@ -523,7 +516,7 @@
     </div>
 
     <script>
-        // --- 1. إعدادات سحابة Firebase الرسمية الخاصة بمشروعك الحقيقي ---
+        // --- إعدادات سحابة Firebase الرسمية ---
         const firebaseConfig = {
             apiKey: "AIzaSyAIg9wqTc4HYwIocwvx72yOobdYm5W2DNA",
             authDomain: "school-ad54a.firebaseapp.com",
@@ -533,11 +526,9 @@
             appId: "1:441942501233:web:e96e023c2271ba9085f8d0"
         };
 
-        // تهيئة الـ Firebase سحابياً للعمل
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // مصفوفات وقواعد بيانات الواجهة
         let studentsDatabase = {};
         let teachersDatabase = {};
         let attendanceArchive = [];
@@ -553,12 +544,10 @@
 
         window.onload = function() {
             refreshSystemRooms();
-            listenToCloudData(); // تشغيل ميزة المزامنة والاستماع اللحظي للبيانات السحابية
+            listenToCloudData();
         };
 
-        // --- 2. الاستماع اللحظي لسحابة Firebase (Realtime Synchronization) ---
         function listenToCloudData() {
-            // الاستماع للطلاب
             db.collection("students").onSnapshot((snapshot) => {
                 studentsDatabase = {};
                 let maxId = 0;
@@ -571,7 +560,6 @@
                 renderStudents(studentsDatabase);
             });
 
-            // الاستماع للمدرسين
             db.collection("teachers").onSnapshot((snapshot) => {
                 teachersDatabase = {};
                 let maxId = 0;
@@ -584,18 +572,16 @@
                 renderTeachers();
             });
 
-            // الاستماع للغيابات
             db.collection("attendance").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 attendanceArchive = [];
                 snapshot.forEach((doc) => {
                     let data = doc.data();
-                    data.firebaseDocId = doc.id; // للاستخدام عند الحذف
+                    data.firebaseDocId = doc.id;
                     attendanceArchive.push(data);
                 });
                 renderAttendanceArchive();
             });
 
-            // الاستماع للتبليغات
             db.collection("notices").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 noticesDatabase = [];
                 snapshot.forEach((doc) => {
@@ -607,15 +593,17 @@
             });
         }
 
-        // --- 3. بقية دوال النظام والتحكم والدخول الموحد ---
         function switchLoginTab(type) {
-            document.querySelectorAll('.login-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.login-form-wrapper').forEach(form => form.classList.remove('active'));
+            document.getElementById('tabManager').classList.remove('active');
+            document.getElementById('tabTeacher').classList.remove('active');
+            document.getElementById('managerLoginForm').classList.remove('active');
+            document.getElementById('teacherLoginForm').classList.remove('active');
+            
             if(type === 'manager') {
-                event.target.classList.add('active');
+                document.getElementById('tabManager').classList.add('active');
                 document.getElementById('managerLoginForm').classList.add('active');
             } else {
-                event.target.classList.add('active');
+                document.getElementById('tabTeacher').classList.add('active');
                 document.getElementById('teacherLoginForm').classList.add('active');
             }
         }
@@ -627,7 +615,7 @@
                 currentSessionRole = "manager";
                 initializeSession();
             } else {
-                alert("❌ خطأ: البريد الإلكتروني أو رمز الحماية غير صحيح!");
+                alert("❌ خطأ: البيانات المدخلة غير صحيحة!");
             }
         }
 
@@ -686,6 +674,9 @@
 
         function logoutSystem() {
             currentSessionRole = ""; currentTeacherSessionName = "";
+            document.getElementById('managerEmail').value = "";
+            document.getElementById('managerPassword').value = "";
+            document.getElementById('teacherLoginName').value = "";
             document.getElementById('mainAppContent').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             stopCamera(); stopQRReader();
@@ -762,7 +753,6 @@
             document.getElementById('weeklyLessonsTotal').value = classes * perClass;
         }
 
-        // --- 4. معالجة عمليات الطلاب المربوطة بـ Firebase السحابي ---
         function handleStudentSubmit(event) {
             event.preventDefault();
             const id = document.getElementById('editStudentId').value;
@@ -774,22 +764,16 @@
             let photo = document.getElementById('studentPhotoBase64').value || defaultPhoto;
 
             if (id) {
-                // تعديل سحابي في Firestore
                 db.collection("students").doc(id.toString()).update({
                     name, phone, mother, level, room, photo
-                }).then(() => {
-                    alert("تم تحديث حساب الطالب سحابياً بنجاح.");
-                });
+                }).then(() => { alert("تم تحديث حساب الطالب سحابياً بنجاح."); });
             } else {
-                // إضافة جديدة سحابياً
                 const nextId = globalStudentCounter + 1;
                 const generatedQRToken = `STUDENT-ID:${nextId}`;
                 
                 db.collection("students").doc(nextId.toString()).set({
                     id: nextId, name, phone, mother, level, room, photo, qrToken: generatedQRToken
-                }).then(() => {
-                    alert("تم حفظ الطالب الجديد وتوليد بياناته سحابياً.");
-                });
+                }).then(() => { alert("تم حفظ الطالب الجديد وتوليد بياناته سحابياً."); });
             }
             resetStudentForm();
         }
@@ -847,9 +831,7 @@
 
         function deleteStudent(id) {
             if(confirm("هل أنت متأكد من حذف الطالب نهائياً من الـ Firebase؟")) {
-                db.collection("students").doc(id.toString()).delete().then(() => {
-                    alert("تم الحذف من السحابة بنجاح.");
-                });
+                db.collection("students").doc(id.toString()).delete().then(() => { alert("تم الحذف من السحابة بنجاح."); });
                 document.getElementById('idWrapper').style.display = 'none';
             }
         }
@@ -877,7 +859,6 @@
             document.getElementById('idWrapper').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- 5. معالجة عمليات المدرسين والجداول على الـ Firebase ---
         function handleTeacherSubmit(event) {
             event.preventDefault();
             const nextId = globalTeacherCounter + 1;
@@ -911,9 +892,7 @@
         }
 
         function deleteTeacher(id) {
-            if(confirm("حذف المدرس نهائياً من قاعدة البيانات السحابية؟")) {
-                db.collection("teachers").doc(id.toString()).delete();
-            }
+            if(confirm("حذف المدرس نهائياً من قاعدة البيانات السحابية؟")) { db.collection("teachers").doc(id.toString()).delete(); }
         }
 
         function generateSchoolScheduleGrid() {
@@ -946,9 +925,7 @@
                         select.setAttribute('data-day', day); select.setAttribute('data-lesson', lessonIndex); select.setAttribute('data-room', room);
                         select.innerHTML = `<option value="">شاغر</option>`;
                         Object.values(teachersDatabase).forEach(tc => {
-                            if (!tc.restDays.includes(day)) {
-                                select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`;
-                            }
+                            if (!tc.restDays.includes(day)) { select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; }
                         });
                         td.appendChild(select); tr.appendChild(td);
                     });
@@ -958,7 +935,6 @@
             });
         }
 
-        // --- 6. غيابات الـ QR والمسح اللحظي مربوط سحابياً ---
         function prepareAttendanceForm() {
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             scannedPresentStudentIds = []; renderClassLiveStatusTable();
@@ -1000,7 +976,7 @@
             if (html5QrScanner && html5QrScanner.isScanning) {
                 html5QrScanner.stop().then(() => {
                     document.getElementById('qrScannerContainer').style.display = 'none';
-                    document.getElementById('btnStartQR').style.display = 'inline-flex'; document.getElementById('btnStopQR').style.display = 'none';
+                    document.getElementById('btnStartQR').style.display = 'inline-flex'; document.getElementById('btnStopQR').style.none = 'none';
                 });
             } else {
                 document.getElementById('qrScannerContainer').style.display = 'none';
@@ -1022,9 +998,7 @@
                 }
             });
 
-            batch.commit().then(() => {
-                stopQRReader(); alert("تم إرسال وقفل الكشف في السحابة بنجاح!");
-            });
+            batch.commit().then(() => { stopQRReader(); alert("تم إرسال وقفل الكشف في السحابة بنجاح!"); });
         }
 
         function renderAttendanceArchive() {
@@ -1036,12 +1010,9 @@
         }
 
         function deleteAttendanceRecord(docId) {
-            if(confirm("حذف هذا السجل الغيابي من السحابة؟")) {
-                db.collection("attendance").doc(docId).delete();
-            }
+            if(confirm("حذف هذا السجل الغيابي من السحابة؟")) { db.collection("attendance").doc(docId).delete(); }
         }
 
-        // --- 7. التبليغات السحابية ---
         function handleNoticeSubmit(event) {
             event.preventDefault();
             const title = document.getElementById('noticeTitle').value; const target = document.getElementById('noticeTarget').value; const body = document.getElementById('noticeBody').value;
@@ -1063,4 +1034,28 @@
         }
 
         function deleteNotice(docId) {
-            if(confirm
+            if(confirm("هل أنت متأكد من حذف هذا التبليغ سحابياً?")) {
+                db.collection("notices").doc(docId).delete().then(() => { alert("تم حذف التبليغ بنجاح."); });
+            }
+        }
+
+        function exportStudentsToExcel() {
+            let table = document.getElementById("studentMainTable");
+            let wb = XLSX.utils.table_to_book(table, {sheet: "الطلاب"});
+            XLSX.writeFile(wb, "سجل_الطلاب_منصة_الفيزياء.xlsx");
+        }
+
+        function exportStudentsToPDF() {
+            let element = document.getElementById("pdfPrintArea");
+            let opt = {
+                margin:       10,
+                filename:     'سجل_الطلاب.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+    </script>
+</body>
+</html>
