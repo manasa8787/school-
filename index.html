@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الفيزياء الذكية - السادس العلمي</title>
+    <title>منصة Baseline التعليمية الذكية الموحدة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -14,142 +14,182 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
 
         * {
             box-sizing: border-box; margin: 0; padding: 0;
-            font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body { background-color: #f4f7f6; color: #1e293b; padding: 20px 16px 100px 16px; direction: rtl; }
+        /* تطبيق الخط على عناصر النص فقط دون التأثير على خطوط الأيقونات */
+        body, input, select, textarea, button, span, h1, h2, h3, h4, h5, h6, p, td, th {
+            font-family: 'Cairo', sans-serif;
+        }
 
-        /* شاشة تسجيل الدخول المحدثة */
-        .login-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f4f7f6; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-box { background: white; width: 100%; max-width: 420px; padding: 30px 24px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; text-align: center; }
-        .login-logo { width: 65px; height: 65px; background: linear-gradient(135deg, #0f172a, #334155); color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; font-size: 28px; }
-        .login-tabs { display: flex; background: #f1f5f9; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
-        .login-tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-radius: 8px; transition: 0.2s; }
-        .login-tab-btn.active { background: white; color: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+        body { background-color: #f8fafc; color: #0f172a; padding: 20px 16px 120px 16px; direction: rtl; line-height: 1.6; }
+
+        /* شاشة تسجيل الدخول المحدثة والملائمة للموبايل */
+        .login-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f1f5f9; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+        .login-box { background: white; width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; text-align: center; }
+        .login-logo { width: 70px; height: 70px; background: linear-gradient(135deg, #0f172a, #334155); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; font-size: 30px; box-shadow: 0 10px 15px -3px rgba(15,23,42,0.3); }
+        .login-tabs { display: flex; background: #f1f5f9; border-radius: 14px; padding: 4px; margin-bottom: 24px; border: 1px solid #e2e8f0; }
+        .login-tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-radius: 10px; transition: all 0.2s ease; }
+        .login-tab-btn.active { background: white; color: #0f172a; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .login-form-wrapper { display: none; }
-        .login-form-wrapper.active { display: block; }
+        .login-form-wrapper.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
         /* واجهة التطبيق الرئيسية بعد الدخول */
-        .main-app-content { display: none; }
+        .main-app-content { display: none; max-width: 800px; margin: 0 auto; }
 
-        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .welcome-text h2 { font-size: 20px; font-weight: 900; color: #0f172a; }
-        .welcome-text p { font-size: 13px; color: #64748b; }
-        .header-actions { display: flex; align-items: center; gap: 10px; }
-        .logout-btn { background-color: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .user-avatar-badge { width: 45px; height: 45px; border-radius: 14px; background-color: #0d9488; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 16px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .welcome-text h2 { font-size: 18px; font-weight: 900; color: #0f172a; }
+        .welcome-text p { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .logout-btn { background-color: #fee2e2; color: #dc2626; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .logout-btn:hover { background-color: #fca5a5; }
+        .user-avatar-badge { width: 45px; height: 45px; border-radius: 14px; background-color: #0d9488; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(13,148,136,0.2); }
 
-        .cards-column { display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px; }
-        .color-card { padding: 20px; border-radius: 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06); cursor: pointer; }
+        /* تعديل تصميم الكروت لتصبح بلمسة Glassmorphic عصرية */
+        .cards-column { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 25px; }
+        @media (min-width: 600px) { .cards-column { grid-template-columns: 1fr 1fr; } }
+        
+        .color-card { padding: 22px; border-radius: 24px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+        .color-card:active { transform: scale(0.98); }
+        .color-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .color-card p { font-size: 12px; opacity: 0.9; font-weight: 400; }
+        
         .card-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
         .card-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
         .card-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
         .card-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-        .card-dark { background: linear-gradient(135deg, #0f172a, #334155); }
+        .card-dark { background: linear-gradient(135deg, #1e293b, #0f172a); }
         .card-teal { background: linear-gradient(135deg, #0d9488, #115e59); }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; overflow-y: auto; padding: 20px 16px; }
-        .modal-content { background: #f4f7f6; border-radius: 24px; max-width: 750px; margin: 0 auto; padding: 20px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .close-modal-btn { position: absolute; top: 15px; left: 15px; background: #e2e8f0; border: none; width: 32px; height: 32px; border-radius: 50%; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        .form-panel { background: white; border-radius: 20px; padding: 20px; border: 1px solid #edf2f7; margin-top: 25px; margin-bottom: 20px; }
-        .form-title { font-size: 15px; font-weight: 700; margin-bottom: 15px; color: #3b82f6; display: flex; align-items: center; gap: 8px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 2000; display: none; overflow-y: auto; padding: 20px 12px; }
+        .modal-content { background: #f8fafc; border-radius: 28px; max-width: 750px; margin: 0 auto; padding: 24px 18px; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.7); }
         
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569; }
-        .form-group input, .form-group select { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; background-color: #f8fafc; font-family: 'Cairo', sans-serif; }
+        .close-modal-btn { position: absolute; top: 18px; left: 18px; background: #e2e8f0; border: none; width: 36px; height: 36px; border-radius: 50%; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: all 0.2s ease; }
+        .close-modal-btn:hover { background: #cbd5e1; transform: scale(1.05); }
+        .close-modal-btn svg { width: 16px; height: 16px; fill: currentColor; transition: transform 0.2s ease; flex-shrink: 0; }
+        .close-modal-btn:hover svg { transform: rotate(90deg); }
+
+        .form-panel { background: white; border-radius: 22px; padding: 20px; border: 1px solid #e2e8f0; margin-top: 25px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); }
+        .form-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
         
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-group { margin-bottom: 16px; position: relative; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #475569; }
+        
+        .input-with-icon { position: relative; display: flex; align-items: center; }
+        .input-with-icon i { position: absolute; right: 14px; color: #94a3b8; font-size: 14px; transition: color 0.2s; }
+        .input-with-icon input, .input-with-icon select, .input-with-icon textarea { width: 100%; padding: 12px 42px 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background-color: #f8fafc; color: #0f172a; transition: all 0.2s; }
+        .input-with-icon input:focus, .input-with-icon select:focus, .input-with-icon textarea:focus { border-color: #3b82f6; background-color: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .input-with-icon input:focus + i, .input-with-icon select:focus + i, .input-with-icon textarea:focus + i { color: #3b82f6; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 480px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
 
-        .camera-container { display: none; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: #f8fafc; border: 2px dashed #3b82f6; border-radius: 14px; }
-        .camera-container video { width: 100%; max-width: 280px; border-radius: 12px; }
-        .camera-preview-img { width: 95px; height: 95px; border-radius: 12px; object-fit: cover; border: 2px solid #cbd5e1; display: none; margin: 10px auto; }
+        .camera-container { display: none; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px; padding: 12px; background: #f1f5f9; border: 2px dashed #3b82f6; border-radius: 16px; }
+        .camera-container video { width: 100%; max-width: 280px; border-radius: 12px; background: black; }
+        .camera-preview-img { width: 95px; height: 95px; border-radius: 16px; object-fit: cover; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; margin: 12px auto; }
 
-        .qr-scanner-box { background: #0f172a; border-radius: 16px; padding: 12px; overflow: hidden; display: none; margin-bottom: 15px; border: 2px solid #ef4444; }
-        #qrReaderArea { width: 100%; background: #000; border-radius: 10px; }
+        .qr-scanner-box { background: #0f172a; border-radius: 20px; padding: 14px; overflow: hidden; display: none; margin-bottom: 15px; border: 2px solid #ef4444; }
+        #qrReaderArea { width: 100%; background: #000; border-radius: 12px; overflow: hidden; }
 
-        .export-buttons-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-        .btn-export { flex: 1; min-width: 160px; padding: 12px; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; color: white; }
+        .export-buttons-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+        .btn-export { flex: 1; min-width: 140px; padding: 12px; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; color: white; transition: opacity 0.2s; }
+        .btn-export:active { opacity: 0.9; }
         .btn-excel { background-color: #16a34a; }
         .btn-pdf-export { background-color: #dc2626; }
         .btn-print-a4 { background-color: #1e293b; color: white; }
 
-        .btn-action { width: 100%; padding: 14px; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-action { width: 100%; padding: 14px; color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s; }
+        .btn-action:active { transform: scale(0.99); }
         .btn-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
         .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
         .btn-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
         .btn-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-        .btn-dark { background: linear-gradient(135deg, #0f172a, #334155); }
+        .btn-dark { background: linear-gradient(135deg, #1e293b, #0f172a); }
         .btn-teal { background: linear-gradient(135deg, #0d9488, #115e59); }
 
-        .search-box-wrapper { margin-bottom: 15px; position: relative; }
-        .search-box-wrapper input { width: 100%; padding: 12px 40px 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; }
-        .search-box-wrapper i { position: absolute; top: 16px; right: 14px; color: #94a3b8; }
+        .search-box-wrapper { margin-bottom: 16px; position: relative; }
+        .search-box-wrapper input { width: 100%; padding: 12px 42px 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-size: 14px; outline: none; background: white; }
+        .search-box-wrapper input:focus { border-color: #3b82f6; }
+        .search-box-wrapper i { position: absolute; top: 16px; right: 16px; color: #94a3b8; font-size: 15px; }
 
-        .excel-panel { background: white; border-radius: 20px; padding: 16px; border: 1px solid #edf2f7; margin-bottom: 20px; }
-        .excel-table-wrapper { width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 12px; }
-        .excel-table { width: 100%; border-collapse: collapse; min-width: 750px; text-align: right; }
-        .excel-table th, .excel-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; vertical-align: middle; }
-        .excel-table th { background-color: #f1f5f9; color: #475569; }
+        .excel-panel { background: white; border-radius: 22px; padding: 18px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); }
+        .excel-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+        .excel-table-wrapper { width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 14px; margin-top: 12px; background: white; -webkit-overflow-scrolling: touch; }
+        .excel-table { width: 100%; border-collapse: collapse; min-width: 600px; text-align: right; }
+        .excel-table th, .excel-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; vertical-align: middle; }
+        .excel-table th { background-color: #f8fafc; color: #475569; font-weight: 700; }
         
-        .room-badge { background-color: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 11px; }
-        .level-badge { background-color: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 11px; }
-        .rest-badge { background-color: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 11px; }
-        .spec-badge { background-color: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 11px; }
-        .notice-badge { background-color: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 11px; }
-        .table-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1; }
+        .room-badge { background-color: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .level-badge { background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .rest-badge { background-color: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .spec-badge { background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .notice-badge { background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .account-badge { background-color: #f1f5f9; color: #334155; padding: 4px 8px; border-radius: 6px; font-family: monospace !important; font-size: 12px; }
+        .table-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .btn-table-action { border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; margin-left: 2px; }
+        .btn-table-action { border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; margin-left: 4px; transition: background 0.2s; }
         .btn-edit { background-color: #e0f2fe; color: #0369a1; }
         .btn-delete { background-color: #fee2e2; color: #dc2626; }
         .btn-print { background-color: #fdf2f8; color: #db2777; }
 
-        .status-present { color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 6px; border-radius: 6px; }
-        .status-absent { color: #dc2626; font-weight: bold; background: #fee2e2; padding: 2px 6px; border-radius: 6px; }
+        .status-present { color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 4px 8px; border-radius: 8px; font-size: 12px; }
+        .status-absent { color: #dc2626; font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 8px; font-size: 12px; }
 
-        /* ستايل تقسيم القاعات والمراحل على شكل صفوف */
-        .stage-row-block { background: #fafafa; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .stage-row-title { font-size: 14px; font-weight: 700; color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 4px; margin-bottom: 10px; }
+        .stage-row-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; margin-bottom: 15px; }
+        .stage-row-title { font-size: 14px; font-weight: 700; color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 6px; margin-bottom: 12px; }
         .stage-halls-list { display: flex; flex-wrap: wrap; gap: 8px; }
-        .hall-item-badge { background: white; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #334155; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .btn-remove-badge { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; }
+        .hall-item-badge { background: white; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #334155; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        
+        .btn-remove-badge { background: none; border: none; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; flex-shrink: 0; }
+        .btn-remove-badge:hover { transform: scale(1.15); }
+        .btn-remove-badge svg { width: 15px; height: 15px; fill: currentColor; }
 
         /* تصميم الهوية الاحترافية بأسلوب Apple Style */
-        .identity-card-wrapper { display: none; background: white; padding: 20px; border-radius: 24px; border: 1px solid #edf2f7; text-align: center; margin-bottom: 20px; }
-        .student-id-card-vertical { width: 290px; height: 460px; background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 24px; padding: 22px; margin: 15px auto; text-align: center; position: relative; border: 2.5px solid #3b82f6; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25); }
+        .identity-card-wrapper { display: none; background: white; padding: 20px; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center; margin-bottom: 20px; }
+        .student-id-card-vertical { width: 280px; height: 440px; background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 24px; padding: 22px; margin: 15px auto; text-align: center; position: relative; border: 2.5px solid #3b82f6; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25); }
         .id-vertical-header { width: 100%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; }
         .id-school-logo { width: 35px; height: 35px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
         .id-vertical-header h4 { font-size: 13px; color: #ffffff; font-weight: 700; text-align: right; flex: 1; margin-right: 10px; }
-        .id-vertical-photo { width: 105px; height: 105px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; background-color: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .id-vertical-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; background-color: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
         .id-vertical-details { width: 100%; text-align: right; background: rgba(255,255,255,0.06); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); }
         .id-vertical-details p { font-size: 12px; margin-bottom: 5px; color: #e2e8f0; display: flex; justify-content: flex-start; gap: 8px; }
-        .id-vertical-details strong { color: #3b82f6; width: 60px; display: inline-block; }
+        .id-vertical-details strong { color: #3b82f6; width: 55px; display: inline-block; }
         .id-vertical-qrcode-area { width: 100%; display: flex; flex-direction: column; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 8px; gap: 4px; }
-        .qr-holder-vertical { background: white; padding: 6px; border-radius: 10px; width: 85px; height: 85px; display: flex; align-items: center; justify-content: center; }
+        .qr-holder-vertical { background: white; padding: 6px; border-radius: 10px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
         .qr-note { font-size: 9px; color: #94a3b8; font-weight: 600; letter-spacing: 0.3px; }
 
-        .day-block { background: #fafafa; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 20px; }
-        .day-title { font-size: 14px; font-weight: 700; color: #ea580c; border-bottom: 2px solid #f97316; padding-bottom: 4px; margin-bottom: 10px; }
-        .schedule-select { width: 100%; padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background:#fff; font-weight: 600; color: #1e293b; transition: 0.3s; }
+        .day-block { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); }
+        .day-title { font-size: 14px; font-weight: 700; color: #ea580c; border-bottom: 2px solid #f97316; padding-bottom: 6px; margin-bottom: 12px; }
+        .schedule-select { min-width: 130px; width: 100%; padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background:#fff; font-weight: 600; color: #1e293b; transition: all 0.2s; }
         .schedule-select.collision-danger { border: 2px solid #ef4444 !important; background-color: #fee2e2 !important; color: #b91c1c !important; }
-        
         .schedule-select.my-own-lesson { border: 2px solid #8b5cf6 !important; background-color: #f5f3ff !important; color: #6d28d9 !important; }
 
-        .bottom-nav-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; height: 65px; background-color: #ffffff; border-radius: 20px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); z-index: 1000; border: 1px solid #e2e8f0; }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #94a3b8; text-decoration: none; font-size: 11px; font-weight: 600; cursor: pointer; }
-        .nav-tab i { font-size: 18px; margin-bottom: 3px; }
+        /* تعديل البار السفلي لمنع تداخله وثباته على شاشات الهواتف مع الألوان النشطة */
+        .bottom-nav-bar { position: fixed; bottom: 12px; left: 12px; right: 12px; height: 68px; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 22px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); z-index: 1000; border: 1px solid rgba(226,232,240,0.8); padding: 0 6px; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #94a3b8; text-decoration: none; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; transition: color 0.2s; text-align: center; }
+        .nav-tab i { font-size: 20px; margin-bottom: 4px; color: #94a3b8; transition: color 0.2s; }
+        .nav-tab:active { transform: scale(0.95); }
+        
+        /* التخصيص اللوني لكل تابه تماسكاً مع ألوان الكروت */
+        #navTabStudents:hover, #navTabStudents.active { color: #3b82f6; } #navTabStudents:hover i, #navTabStudents.active i { color: #3b82f6; }
+        #navTabTeachers:hover, #navTabTeachers.active { color: #8b5cf6; } #navTabTeachers:hover i, #navTabTeachers.active i { color: #8b5cf6; }
+        #navTabSchedule:hover, #navTabSchedule.active { color: #f97316; } #navTabSchedule:hover i, #navTabSchedule.active i { color: #f97316; }
+        #navTabAttendance:hover, #navTabAttendance.active { color: #ef4444; } #navTabAttendance:hover i, #navTabAttendance.active i { color: #ef4444; }
+        #navTabNotices:hover, #navTabNotices.active { color: #1e293b; } #navTabNotices:hover i, #navTabNotices.active i { color: #1e293b; }
+        #navTabSettings:hover, #navTabSettings.active { color: #0d9488; } #navTabSettings:hover i, #navTabSettings.active i { color: #0d9488; }
 
-        /* تنسيقات مخصصة لطباعة الأوراق قياس A4 النظيفة */
         @media print {
             body { background: white; padding: 0; }
             .modal-overlay { position: absolute; top:0; left:0; width:100%; background:white; backdrop-filter:none; display:block !important; }
-            .modal-content { box-shadow:none; padding:0; max-width:100%; }
+            .modal-content { box-shadow:none; padding:0; max-width:100%; border:none; }
             .no-print, .close-modal-btn, .form-panel, .search-box-wrapper, .export-buttons-group, .bottom-nav-bar, .app-header, .cards-column { display:none !important; }
-            .excel-table-wrapper { border:none; margin-top:0; }
+            .excel-table-wrapper { border:none; margin-top:0; overflow: visible; }
             .excel-table { min-width:100% !important; border:1px solid #000; }
             .excel-table th, .excel-table td { border:1px solid #000; color:#000 !important; padding:8px; font-size:12pt; }
             .excel-table th { background-color:#eaedf1 !important; }
@@ -160,9 +200,9 @@
 
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
-            <div class="login-logo"><i class="fas fa-atom"></i></div>
-            <h2 style="font-size:18px; font-weight:900; margin-bottom:5px;">بوابة الدخول الموحدة السحابية</h2>
-            <p style="font-size:12px; color:#64748b; margin-bottom:20px;">منصة الفيزياء الذكية - السادس العلمي</p>
+            <div class="login-logo"><i class="fa-solid fa-atom"></i></div>
+            <h2 style="font-size:18px; font-weight:900; margin-bottom:6px;">بوابة الدخول الموحدة السحابية</h2>
+            <p style="font-size:12px; color:#64748b; margin-bottom:24px;">منظومة الإدارة التعليمية والذكية الموحدة</p>
             
             <div class="login-tabs">
                 <button class="login-tab-btn active" id="tabManager" onclick="switchLoginTab('manager')">دخول المدير</button>
@@ -172,21 +212,30 @@
             <div class="login-form-wrapper active" id="managerLoginForm">
                 <div class="form-group" style="text-align:right;">
                     <label>البريد الإلكتروني للمدير</label>
-                    <input type="email" id="managerEmailInput" value="Manager.school@gmail.com" placeholder="ادخل البريد الإلكتروني الخاص بك...">
+                    <div class="input-with-icon">
+                        <input type="email" id="managerEmailInput" value="" placeholder="ادخل البريد الإلكتروني الخاص بك...">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
                 </div>
                 <div class="form-group" style="text-align:right;">
                     <label>كلمة المرور</label>
-                    <input type="password" id="managerPassword" value="20162027" placeholder="••••••••">
+                    <div class="input-with-icon">
+                        <input type="password" id="managerPassword" value="" placeholder="••••••••">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
                 </div>
-                <button type="button" class="btn-action btn-dark" style="margin-top:10px;" onclick="attemptManagerLogin()"><i class="fas fa-sign-in-alt"></i> تسجيل دخول كمدير</button>
+                <button type="button" class="btn-action btn-dark" style="margin-top:10px;" onclick="attemptManagerLogin()"><i class="fa-solid fa-right-to-bracket"></i> تسجيل دخول كمدير</button>
             </div>
 
             <div class="login-form-wrapper" id="teacherLoginForm">
                 <div class="form-group" style="text-align:right;">
                     <label>الاسم الثلاثي واللقب للمدرس</label>
-                    <input type="text" id="teacherLoginName" placeholder="اكتب اسمك الثلاثي المسجل بالنظام...">
+                    <div class="input-with-icon">
+                        <input type="text" id="teacherLoginName" placeholder="اكتب اسمك الثلاثي المسجل بالنظام...">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
                 </div>
-                <button type="button" class="btn-action btn-purple" style="margin-top:10px;" onclick="attemptTeacherLogin()"><i class="fas fa-chalkboard-teacher"></i> دخول المدرس</button>
+                <button type="button" class="btn-action btn-purple" style="margin-top:10px;" onclick="attemptTeacherLogin()"><i class="fa-solid fa-chalkboard-user"></i> دخول المدرس</button>
             </div>
         </div>
     </div>
@@ -194,82 +243,123 @@
     <div class="main-app-content" id="mainAppContent">
         <div class="app-header">
             <div class="welcome-text">
-                <h2 id="topSchoolName">منصة الفيزياء - السادس العلمي</h2>
+                <h2 id="topSchoolName">المنصة التعليمية الشاملة</h2>
                 <p id="userRoleSubtext">نظام الإدارة المدرسية الموحد الشامل</p>
             </div>
             <div class="header-actions">
-                <button class="logout-btn" onclick="logoutSystem()"><i class="fas fa-power-off"></i> خروج</button>
-                <div class="user-avatar-badge" id="roleBadgeIcon"><i class="fas fa-graduation-cap"></i></div>
+                <button class="logout-btn" onclick="logoutSystem()"><i class="fa-solid fa-power-off"></i> خروج</button>
+                <div class="user-avatar-badge" id="roleBadgeIcon"><i class="fa-solid fa-graduation-cap"></i></div>
             </div>
         </div>
 
         <div class="cards-column">
             <div class="color-card card-blue" id="cardStudents" onclick="openModal('studentsModal')">
                 <div class="info"><h3>شؤون الطلاب والهويات</h3><p id="mainStudentCount">جاري التحميل سحابياً...</p></div>
-                <i class="fas fa-user-graduate" style="font-size:26px; opacity:0.3"></i>
+                <i class="fa-solid fa-user-graduate" style="font-size:28px; opacity:0.25"></i>
             </div>
             <div class="color-card card-purple" id="cardTeachers" onclick="openModal('teachersModal')">
                 <div class="info"><h3>إدارة الهيئة التدريسية وحساباتها</h3><p id="mainTeacherCount">جاري التحميل سحابياً...</p></div>
-                <i class="fas fa-chalkboard-teacher" style="font-size:26px; opacity:0.3"></i>
+                <i class="fa-solid fa-chalkboard-user" style="font-size:28px; opacity:0.25"></i>
             </div>
             <div class="color-card card-orange" id="cardSchedule" onclick="openModal('scheduleModal'); loadAndBuildSchedule();">
                 <div class="info"><h3>جدول الدروس الذكي والمربوط</h3><p id="scheduleCardDesc">ربط شامل (منع تضارب المدرسين تلقائياً)</p></div>
-                <i class="fas fa-calendar-alt" style="font-size:26px; opacity:0.3"></i>
+                <i class="fa-solid fa-calendar-days" style="font-size:28px; opacity:0.25"></i>
             </div>
             <div class="color-card card-red" id="cardAttendance" onclick="openModal('attendanceModal'); prepareAttendanceForm();">
                 <div class="info"><h3>جهاز الـ QR والغيابات لداخل القاعة</h3><p id="mainAbsencesCount">جاري التحميل سحابياً...</p></div>
-                <i class="fas fa-qrcode" style="font-size:26px; opacity:0.3"></i>
+                <i class="fa-solid fa-qrcode" style="font-size:28px; opacity:0.25"></i>
             </div>
             <div class="color-card card-dark" id="cardNotices" onclick="openModal('noticesModal')">
                 <div class="info"><h3>لوحة التبليغات والتعاميم</h3><p id="mainNoticesCount">0 تبليغات نشطة</p></div>
-                <i class="fas fa-bullhorn" style="font-size:26px; opacity:0.3"></i>
+                <i class="fa-solid fa-bullhorn" style="font-size:28px; opacity:0.25"></i>
             </div>
             <div class="color-card card-teal" id="cardSettings" onclick="openModal('settingsModal')">
                 <div class="info"><h3>⚙️ إدارة القاعات والإعدادات العامة</h3><p>التحكم الشامل بالقاعات والبيانات</p></div>
-                <i class="fas fa-sliders-h" style="font-size:26px; opacity:0.3"></i>
+                <i class="fa-solid fa-sliders" style="font-size:28px; opacity:0.25"></i>
             </div>
         </div>
 
         <div class="modal-overlay" id="studentsModal">
             <div class="modal-content">
-                <button class="close-modal-btn" onclick="closeModal('studentsModal'); stopCamera();"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700;"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i> إدارة الطلاب والملفات (مربوط بالـ Firebase)</h2>
+                <button class="close-modal-btn" onclick="closeModal('studentsModal'); stopCamera();">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2 style="font-size:16px; font-weight:700;"><i class="fa-solid fa-user-graduate" style="color:#3b82f6; margin-left:5px;"></i> إدارة الطلاب والملفات (مربوط بالـ Firebase)</h2>
                 
                 <div class="form-panel">
-                    <div class="form-title"><i class="fas fa-user-plus"></i> <span id="formActionTitle">إضافة طالب جديد وتوليد بيانات الهوية</span></div>
+                    <div class="form-title"><i class="fa-solid fa-user-plus" style="margin-left: 6px; color: #3b82f6;"></i> <span id="formActionTitle">إضافة طالب جديد وتوليد بيانات الهوية</span></div>
                     <form id="studentForm" onsubmit="handleStudentSubmit(event)">
                         <input type="hidden" id="editStudentId" value="">
                         
                         <div class="form-group">
                             <label>اسم الطالب الثلاثي واللقب</label>
-                            <input type="text" id="studentName" required>
+                            <div class="input-with-icon">
+                                <input type="text" id="studentName" required>
+                                <i class="fa-solid fa-user"></i>
+                            </div>
                         </div>
                         
                         <div class="grid-2">
-                            <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="studentPhone" required></div>
-                            <div class="form-group"><label>اسم الأم الثنائي</label><input type="text" id="motherName" required></div>
+                            <div class="form-group">
+                                <label>رقم الهاتف</label>
+                                <div class="input-with-icon">
+                                    <input type="tel" id="studentPhone" required>
+                                    <i class="fa-solid fa-phone"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>اسم الأم الثنائي</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="motherName" required>
+                                    <i class="fa-solid fa-venus"></i>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="grid-2">
                             <div class="form-group">
                                 <label>المرحلة الدراسية</label>
-                                <select id="studentLevel" onchange="filterRoomsByLevelInForm()" required>
-                                    <option value="السادس العلمي">السادس العلمي</option>
-                                    <option value="الخامس العلمي">الخامس العلمي</option>
-                                    <option value="الرابع الإعدادي">الرابع الإعدادي</option>
-                                </select>
+                                <div class="input-with-icon">
+                                    <select id="studentLevel" onchange="filterRoomsByLevelInForm()" required>
+                                        <optgroup label="المرحلة الابتدائية">
+                                            <option value="الأول ابتدائي">الأول ابتدائي</option>
+                                            <option value="الثاني ابتدائي">الثاني ابتدائي</option>
+                                            <option value="الثالث ابتدائي">الثالث ابتدائي</option>
+                                            <option value="الرابع ابتدائي">الرابع ابتدائي</option>
+                                            <option value="الخامس ابتدائي">الخامس ابتدائي</option>
+                                            <option value="السادس ابتدائي">السادس ابتدائي</option>
+                                        </optgroup>
+                                        <optgroup label="المرحلة المتوسطة">
+                                            <option value="الأول متوسط">الأول متوسط</option>
+                                            <option value="الثاني متوسط">الثاني متوسط</option>
+                                            <option value="الثالث متوسط">الثالث متوسط</option>
+                                        </optgroup>
+                                        <optgroup label="المرحلة الإعدادية">
+                                            <option value="الرابع إعدادي">الرابع إعدادي</option>
+                                            <option value="الخامس إعدادي">الخامس إعدادي</option>
+                                            <option value="السادس العلمي">السادس العلمي</option>
+                                            <option value="السادس الأدبي">السادس الأدبي</option>
+                                        </optgroup>
+                                    </select>
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>القاعة الدراسية</label>
-                                <select id="studentRoom" required></select>
+                                <div class="input-with-icon">
+                                    <select id="studentRoom" required></select>
+                                    <i class="fa-solid fa-door-open"></i>
+                                </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-camera"></i> تصوير الطالب (تشغيل كاميرا الهاتف الخلفية)</label>
+                            <label><i class="fa-solid fa-camera"></i> تصوير الطالب (تشغيل كاميرا الهاتف الخلفية)</label>
                             <div style="display:flex; gap:10px; margin-bottom:10px;">
-                                <button type="button" class="btn-action btn-dark" style="padding:8px;" onclick="startBackCamera()"><i class="fas fa-video"></i> تشغيل الكاميرا الخلفية</button>
-                                <button type="button" class="btn-action btn-teal" style="padding:8px;" onclick="captureSnapshot()"><i class="fas fa-camera-retro"></i> التقاط الصورة الفورية</button>
+                                <button type="button" class="btn-action btn-dark" style="padding:10px; font-size:13px;" onclick="startBackCamera()"><i class="fa-solid fa-video"></i> تشغيل الكاميرا</button>
+                                <button type="button" class="btn-action btn-teal" style="padding:10px; font-size:13px;" onclick="captureSnapshot()"><i class="fa-solid fa-camera-retro"></i> التقاط الصورة</button>
                             </div>
                             <div class="camera-container" id="cameraWrapper">
                                 <video id="videoFeed" autoplay playsinline></video>
@@ -280,34 +370,37 @@
                             <input type="hidden" id="studentPhotoBase64" value="">
                         </div>
                         
-                        <button type="submit" class="btn-action btn-blue" id="submitBtn"><i class="fas fa-save"></i> حفظ سحابي وتوليد الـ QR والهوية</button>
+                        <button type="submit" class="btn-action btn-blue" id="submitBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ سحابي وتوليد الـ QR والهوية</button>
                         <button type="button" class="btn-action btn-dark" id="cancelEditBtn" style="display:none; margin-top:8px;" onclick="resetStudentForm()">إلغاء التعديل</button>
                     </form>
                 </div>
 
                 <div class="search-box-wrapper">
-                    <i class="fas fa-search"></i>
+                    <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="searchBar" placeholder="بحث سريع باسم الطالب المكتوب هنا..." oninput="searchStudents()">
                 </div>
                 
                 <div class="excel-panel">
-                    <h3><i class="fas fa-table"></i> سجل الطلاب الموحد</h3>
+                    <h3><i class="fa-solid fa-table" style="color: #3b82f6; margin-left: 5px;"></i> سجل الطلاب الموحد</h3>
                     
-                    <div class="filter-box no-print" style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #cbd5e1; margin-top:10px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
-                        <label style="font-size:13px; font-weight:700;">طباعة وعرض حسب القاعة:</label>
-                        <select id="hallFilterDropdown" onchange="filterStudentsTableByHall()" style="padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-family:'Cairo';">
-                            <option value="all">كل القاعات الدراسية</option>
-                        </select>
-                        <button class="btn-export btn-print-a4" onclick="window.print()"><i class="fas fa-print"></i> طباعة طلاب القاعة الحالية (A4)</button>
+                    <div class="filter-box no-print" style="background:#f8fafc; padding:14px; border-radius:14px; border:1px solid #e2e8f0; margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+                        <label style="font-size:13px; font-weight:700;">عرض وطباعة حسب القاعة:</label>
+                        <div class="input-with-icon">
+                            <select id="hallFilterDropdown" onchange="filterStudentsTableByHall()">
+                                <option value="all">كل القاعات الدراسية</option>
+                            </select>
+                            <i class="fa-solid fa-filter"></i>
+                        </div>
+                        <button class="btn-export btn-print-a4" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة طلاب القاعة الحالية (A4)</button>
                     </div>
 
                     <div class="export-buttons-group no-print">
-                        <button class="btn-export btn-excel" onclick="exportStudentsToExcel()"><i class="fas fa-file-excel"></i> تصدير سجل الطلاب (Excel)</button>
-                        <button class="btn-export btn-pdf-export" onclick="exportStudentsToPDF()"><i class="fas fa-file-pdf"></i> تصدير السجل PDF</button>
+                        <button class="btn-export btn-excel" onclick="exportStudentsToExcel()"><i class="fa-solid fa-file-excel"></i> تصدير (Excel)</button>
+                        <button class="btn-export btn-pdf-export" onclick="exportStudentsToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
                     </div>
                     
                     <div class="excel-table-wrapper" id="pdfPrintArea">
-                        <h2 id="printStudentsHeaderTitle" style="text-align:center; margin-bottom:12px; font-size:16px; display:none;" class="visible-print-block">سجل أسماء وقوائم الطلاب - معهد آراي</h2>
+                        <h2 id="printStudentsHeaderTitle" style="text-align:center; margin-bottom:12px; font-size:16px; display:none;" class="visible-print-block">سجل أسماء وقوائم الطلاب</h2>
                         <table class="excel-table" id="studentMainTable">
                             <thead>
                                 <tr>
@@ -316,7 +409,7 @@
                                     <th>المرحلة</th>
                                     <th>القاعة</th>
                                     <th>الهاتف</th>
-                                    <th class="no-print">الهوية والـ QR</th>
+                                    <th class="no-print">الخيارات</th>
                                 </tr>
                             </thead>
                             <tbody id="studentTableBody"></tbody>
@@ -325,11 +418,11 @@
                 </div>
 
                 <div class="identity-card-wrapper" id="idWrapper">
-                    <h3 style="font-size:14px; margin-bottom:10px; color:#1e293b;"><i class="fas fa-id-badge"></i> هوية الطالب الاحترافية المعتمدة لداخل القاعة</h3>
+                    <h3 style="font-size:14px; margin-bottom:12px; color:#1e293b;"><i class="fa-solid fa-id-card-clip"></i> هوية الطالب الاحترافية المعتمدة لداخل القاعة</h3>
                     <div class="student-id-card-vertical" id="printableIdCard">
                         <div class="id-vertical-header">
-                            <div class="id-school-logo"><i class="fas fa-atom"></i></div>
-                            <h4 id="idCardSchoolLabel">منصة الفيزياء - السادس العلمي</h4>
+                            <div class="id-school-logo"><i class="fa-solid fa-atom"></i></div>
+                            <h4 id="idCardSchoolLabel">المنصة التعليمية الشاملة</h4>
                             <span id="idCardRoom" class="room-badge">-</span>
                         </div>
                         <div class="id-vertical-photo-box">
@@ -346,52 +439,94 @@
                             <span class="qr-note">نظام الحضور الذكي بالـ QR الفوري</span>
                         </div>
                     </div>
-                    <button class="btn-action btn-teal" style="width:auto; padding:10px 25px; margin:15px auto 0 auto;" onclick="window.print()"><i class="fas fa-print"></i> طباعة هذه الهوية الآن (PDF)</button>
+                    <button class="btn-action btn-teal" style="width:auto; padding:10px 25px; margin:15px auto 0 auto;" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة هذه الهوية الآن (PDF)</button>
                 </div>
             </div>
         </div>
 
         <div class="modal-overlay" id="teachersModal">
             <div class="modal-content">
-                <button class="close-modal-btn" onclick="closeModal('teachersModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#8b5cf6;"><i class="fas fa-chalkboard-teacher"></i> إدارة المدرسين وتوليد الحسابات السحابية</h2>
+                <button class="close-modal-btn" onclick="closeModal('teachersModal')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2 style="font-size:16px; font-weight:700; color:#8b5cf6;"><i class="fa-solid fa-chalkboard-user" style="margin-left: 5px;"></i> إدارة المدرسين وتوليد الحسابات السحابية</h2>
                 <div class="form-panel">
                     <form id="teacherForm" onsubmit="handleTeacherSubmit(event)">
                         <div class="grid-2">
-                            <div class="form-group"><label>اسم المدرس الثلاثي</label><input type="text" id="teacherNameInput" required></div>
+                            <div class="form-group">
+                                <label>اسم المدرس الثلاثي</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="teacherNameInput" required>
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label>الاختصاص الدراسي (المادة)</label>
-                                <select id="teacherSpec" required>
-                                    <option value="الفيزياء">الفيزياء</option>
-                                    <option value="الكيمياء">الكيمياء</option>
-                                    <option value="الأحياء">الأحياء</option>
-                                    <option value="الرياضيات">الرياضيات</option>
-                                    <option value="اللغة العربية">اللغة العربية</option>
-                                    <option value="اللغة الإنجليزية">اللغة الإنجليزية</option>
-                                    <option value="التربية الإسلامية">التربية الإسلامية</option>
-                                    <option value="الحاسوب">الحاسوب</option>
-                                    <option value="اللغة الفرنسية">اللغة الفرنسية</option>
-                                </select>
+                                <div class="input-with-icon">
+                                    <select id="teacherSpec" required>
+                                        <option value="الفيزياء">الفيزياء</option>
+                                        <option value="الكيمياء">الكيمياء</option>
+                                        <option value="الأحياء">الأحياء</option>
+                                        <option value="الرياضيات">الرياضيات</option>
+                                        <option value="اللغة العربية">اللغة العربية</option>
+                                        <option value="اللغة الإنجليزية">اللغة الإنجليزية</option>
+                                        <option value="التربية الإسلامية">التربية الإسلامية</option>
+                                        <option value="الحاسوب">الحاسوب</option>
+                                    </select>
+                                    <i class="fa-solid fa-book-open"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="teacherPhone" required></div>
-                        
-                        <div class="grid-2" style="background: #fdf8ff; padding: 10px; border-radius: 12px; border: 1px dashed #c084fc; margin-bottom: 15px;">
-                            <div class="form-group"><label>عدد الشعب الكلي</label><input type="number" id="classCount" value="1" min="1" oninput="calculateLessonsTotal()" required></div>
-                            <div class="form-group"><label>الحصص للشعبة أسبوعياً</label><input type="number" id="lessonsPerClass" value="4" min="1" oninput="calculateLessonsTotal()" required></div>
+                        <div class="form-group">
+                            <label>رقم الهاتف</label>
+                            <div class="input-with-icon">
+                                <input type="tel" id="teacherPhone" required>
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
                         </div>
-                        <div class="form-group"><label>إجمالي الحصص الأسبوعية المستهدفة لجدول الدروس</label><input type="number" id="weeklyLessonsTotal" value="4" readonly style="background:#e2e8f0; font-weight:700;"></div>
-                        <div class="form-group"><label>القاعات المسندة (فاصلة ,)</label><input type="text" id="teacherRooms" placeholder="مثال: قاعة 1, قاعة 2" required></div>
+                        
+                        <div class="grid-2" style="background: #fdf8ff; padding: 12px; border-radius: 14px; border: 1px dashed #c084fc; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>عدد الشعب الكلي</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="classCount" value="1" min="1" oninput="calculateLessonsTotal()" required>
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>الحصص للشعبة أسبوعياً</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="lessonsPerClass" value="4" min="1" oninput="calculateLessonsTotal()" required>
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>إجمالي الحصص الأسبوعية المستهدفة لجدول الدروس</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="weeklyLessonsTotal" value="4" readonly style="background:#e2e8f0; font-weight:700;">
+                                <i class="fa-solid fa-calculator"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>القاعات المسندة (فاصلة ,)</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="teacherRooms" placeholder="مثال: قاعة 1, قاعة 2" required>
+                                <i class="fa-solid fa-door-closed"></i>
+                            </div>
+                        </div>
 
                         <div class="form-group">
                             <label>أيام الاستراحة المحددة للمدرس</label>
-                            <div class="days-checkbox-group" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1;">
-                                <label><input type="checkbox" name="restDays" value="لا يوجد" id="noRestCheck" onchange="toggleNoRest(this)"> لا يوجد</label>
-                                <label><input type="checkbox" name="restDays" value="الأحد"> الأحد</label>
-                                <label><input type="checkbox" name="restDays" value="الاثنين"> الاثنين</label>
-                                <label><input type="checkbox" name="restDays" value="الثلاثاء"> الثلاثاء</label>
-                                <label><input type="checkbox" name="restDays" value="الأربعاء"> الأربعاء</label>
-                                <label><input type="checkbox" name="restDays" value="الخميس"> الخميس</label>
+                            <div class="days-checkbox-group" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <label style="font-size:13px; font-weight:600;"><input type="checkbox" name="restDays" value="لا يوجد" id="noRestCheck" onchange="toggleNoRest(this)"> لا يوجد</label>
+                                <label style="font-size:13px; font-weight:600;"><input type="checkbox" name="restDays" value="الأحد"> الأحد</label>
+                                <label style="font-size:13px; font-weight:600;"><input type="checkbox" name="restDays" value="الاثنين"> الاثنين</label>
+                                <label style="font-size:13px; font-weight:600;"><input type="checkbox" name="restDays" value="الثلاثاء"> الثلاثاء</label>
+                                <label style="font-size:13px; font-weight:600;"><input type="checkbox" name="restDays" value="الأربعاء"> الأربعاء</label>
+                                <label style="font-size:13px; font-weight:600;"><input type="checkbox" name="restDays" value="الخميس"> الخميس</label>
                             </div>
                         </div>
                         <button type="submit" class="btn-action btn-purple">حفظ وتوليد الحساب والجدول التلقائي للمدرس</button>
@@ -399,14 +534,13 @@
                 </div>
                 
                 <div class="excel-panel">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3><i class="fas fa-key"></i> بيانات المدرسين الحالية وجداول الحصص</h3>
-                        <button class="btn-export btn-print-a4" style="flex:none; width:auto; padding:8px 16px;" onclick="window.print()"><i class="fas fa-print"></i> طباعة كشف المدرسين (A4)</button>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
+                        <h3><i class="fa-solid fa-key" style="color:#8b5cf6;"></i> بيانات المدرسين وحساباتهم</h3>
+                        <button class="btn-export btn-print-a4" style="width:100%;" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة كشف المدرسين (A4)</button>
                     </div>
                     <div class="excel-table-wrapper">
-                        <h2 style="text-align:center; margin-bottom:12px; font-size:16px; display:none;" class="visible-print-block">كشف سجل بيانات السادة المدرسين - معهد آراي التعليمي</h2>
                         <table class="excel-table">
-                            <thead><tr><th>كود المدرس</th><th>المدرس</th><th>الاختصاص</th><th>الحصص المقررة</th><th>حساب الدخول</th><th>الاستراحة</th><th class="no-print">حذف</th></tr></thead>
+                            <thead><tr><th>كود المدرس</th><th>المدرس</th><th>الاختصاص</th><th>الحصص</th><th>حساب الدخول</th><th>الاستراحة</th><th class="no-print">حذف</th></tr></thead>
                             <tbody id="teacherTableBody"></tbody>
                         </table>
                     </div>
@@ -416,14 +550,30 @@
 
         <div class="modal-overlay" id="scheduleModal">
             <div class="modal-content" style="max-width: 900px;">
-                <button class="close-modal-btn" onclick="closeModal('scheduleModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#f97316;"><i class="fas fa-calendar-alt"></i> جدول الدروس الأوتوماتيكي المربوط ذكياً بسحابة Firebase</h2>
+                <button class="close-modal-btn" onclick="closeModal('scheduleModal')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2 style="font-size:16px; font-weight:700; color:#f97316;"><i class="fa-solid fa-calendar-days" style="margin-left: 5px;"></i> جدول الدروس الأوتوماتيكي المربوط بسحابة Firebase</h2>
                 <div class="form-panel" id="adminScheduleControlPanel">
                     <div class="grid-2">
-                        <div class="form-group"><label>وقت بدء الدوام اليومي</label><input type="time" id="startTime" value="08:00"></div>
-                        <div class="form-group"><label>مدة الدرس الواحدة (بالدقائق)</label><input type="number" id="lessonDuration" value="45"></div>
+                        <div class="form-group">
+                            <label>وقت بدء الدوام اليومي</label>
+                            <div class="input-with-icon">
+                                <input type="time" id="startTime" value="08:00">
+                                <i class="fa-solid fa-hourglass-start"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>مدة الدرس الواحدة (بالدقائق)</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="lessonDuration" value="45">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="btn-action btn-orange" onclick="rebuildAndClearSchedule()"><i class="fas fa-sync"></i> إعادة بناء وتصفير هيكلية الجدول سحابياً</button>
+                    <button type="button" class="btn-action btn-orange" onclick="rebuildAndClearSchedule()"><i class="fa-solid fa-rotate"></i> إعادة بناء وتصفير هيكلية الجدول سحابياً</button>
                 </div>
                 <div id="dynamicScheduleContainer"></div>
             </div>
@@ -431,50 +581,60 @@
 
         <div class="modal-overlay" id="attendanceModal">
             <div class="modal-content">
-                <button class="close-modal-btn" onclick="closeModal('attendanceModal'); stopQRReader();"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#ef4444;"><i class="fas fa-qrcode"></i> نظام مسح غيابات القاعة الفوري بالـ QR والأرشيف الإداري</h2>
+                <button class="close-modal-btn" onclick="closeModal('attendanceModal'); stopQRReader();">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2 style="font-size:16px; font-weight:700; color:#ef4444;"><i class="fa-solid fa-qrcode" style="margin-left:5px;"></i> نظام مسح غيابات القاعة الفوري بالـ QR والأرشيف</h2>
                 
                 <div class="form-panel">
-                    <div class="form-title red"><i class="fas fa-camera"></i> لوحة مسح المدرس لبطاقات الطلاب داخل القاعة</div>
+                    <div class="form-title red"><i class="fa-solid fa-camera" style="color:#ef4444; margin-left:5px;"></i> لوحة مسح بطاقات الطلاب داخل القاعة</div>
                     
                     <div class="grid-2">
                         <div class="form-group">
                             <label>اختر القاعة الدراسية الحالية</label>
-                            <select id="attendanceRoomFilter" onchange="prepareAttendanceForm()"></select>
+                            <div class="input-with-icon">
+                                <select id="attendanceRoomFilter" onchange="prepareAttendanceForm()"></select>
+                                <i class="fa-solid fa-door-open"></i>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>التاريخ الفعلي</label>
-                            <input type="date" id="attendanceDate" readonly style="background:#e2e8f0;">
+                            <div class="input-with-icon">
+                                <input type="date" id="attendanceDate" readonly style="background:#e2e8f0;">
+                                <i class="fa-solid fa-calendar-day"></i>
+                            </div>
                         </div>
                     </div>
 
                     <div style="display:flex; gap:10px; margin-bottom:15px;">
-                        <button type="button" class="btn-action btn-dark" id="btnStartQR" onclick="startQRReader()"><i class="fas fa-qrcode"></i> افتح كاميرا مسح الهويات</button>
-                        <button type="button" class="btn-action btn-red" id="btnStopQR" style="display:none;" onclick="stopQRReader()"><i class="fas fa-stop"></i> إيقاف الكاميرا</button>
+                        <button type="button" class="btn-action btn-dark" id="btnStartQR" onclick="startQRReader()"><i class="fa-solid fa-qrcode"></i> افتح كاميرا المسح</button>
+                        <button type="button" class="btn-action btn-red" id="btnStopQR" style="display:none;" onclick="stopQRReader()"><i class="fa-solid fa-stop"></i> إيقاف الكاميرا</button>
                     </div>
 
                     <div class="qr-scanner-box" id="qrScannerContainer">
                         <div id="qrReaderArea"></div>
                     </div>
 
-                    <div style="margin-top: 10px; background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #cbd5e1;">
-                        <p style="font-size:13px; font-weight:bold; color:#0f172a;"><i class="fas fa-info-circle" style="color:#3b82f6;"></i> حالة قراءة الكود اللحظية:</p>
+                    <div style="margin-top: 10px; background:#f8fafc; padding:14px; border-radius:14px; border:1px solid #e2e8f0;">
+                        <p style="font-size:13px; font-weight:bold; color:#0f172a;"><i class="fa-solid fa-circle-info" style="color:#3b82f6;"></i> حالة القراءة اللحظية:</p>
                         <div id="qrScanStatusFeed" style="font-size:13px; color:#16a34a; font-weight:bold; margin-top:4px;">مستعد لبدء المسح...</div>
                     </div>
 
-                    <h3 style="font-size:14px; font-weight:700; margin-top:20px; color:#475569;"><i class="fas fa-list-ol"></i> قائمة كشف الحضور المستخرجة تلقائياً للقاعة:</h3>
+                    <h3 style="font-size:14px; font-weight:700; margin-top:20px; color:#475569;"><i class="fa-solid fa-list-ol"></i> قائمة كشف الحضور المستخرجة تلقائياً:</h3>
                     <div class="excel-table-wrapper" style="max-height: 250px; overflow-y: auto;">
                         <table class="excel-table">
-                            <thead><tr><th>اسم الطالب</th><th>الحالة المحتسبة داخل القاعة</th></tr></thead>
+                            <thead><tr><th>اسم الطالب</th><th>الحالة داخل القاعة</th></tr></thead>
                             <tbody id="attendanceStudentsList"></tbody>
                         </table>
                     </div>
                     
-                    <button type="button" class="btn-action btn-red" style="margin-top:15px;" onclick="saveDailyAttendance()"><i class="fas fa-paper-plane"></i> إرسال الأسماء الغائبة فوراً إلى السحابة وقفل الكشف</button>
+                    <button type="button" class="btn-action btn-red" style="margin-top:15px;" onclick="saveDailyAttendance()"><i class="fa-solid fa-paper-plane"></i> إرسال الأسماء الغائبة فوراً وقفل الكشف</button>
                 </div>
 
                 <div class="excel-panel" id="adminAbsenceArchivePanel">
-                    <h3><i class="fas fa-university"></i> صندوق الغيابات المستلمة لدى الإدارة العامة</h3>
+                    <h3><i class="fa-solid fa-building-columns"></i> صندوق الغيابات المستلمة لدى الإدارة</h3>
                     <div class="excel-table-wrapper">
                         <table class="excel-table">
                             <thead><tr><th>التاريخ</th><th>اليوم</th><th>القاعة</th><th>الطالب المستبين غيابه</th><th>الحالة</th><th>حذف</th></tr></thead>
@@ -487,32 +647,45 @@
 
         <div class="modal-overlay" id="noticesModal">
             <div class="modal-content">
-                <button class="close-modal-btn" onclick="closeModal('noticesModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#0f172a;"><i class="fas fa-bullhorn"></i> لوحة التبليغات والتعاميم المدرسية</h2>
+                <button class="close-modal-btn" onclick="closeModal('noticesModal')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2 style="font-size:16px; font-weight:700; color:#0f172a;"><i class="fa-solid fa-bullhorn" style="margin-left:5px;"></i> لوحة التبليغات والتعاميم المدرسية</h2>
                 <div class="form-panel" id="addNoticeFormPanel">
-                    <div class="form-title dark"><i class="fas fa-plus-circle"></i> نشر تبليغ أو توجيه جديد</div>
+                    <div class="form-title dark"><i class="fa-solid fa-circle-plus" style="color:#1e293b; margin-left:5px;"></i> نشر تبليغ أو توجيه جديد</div>
                     <form id="noticeForm" onsubmit="handleNoticeSubmit(event)">
                         <div class="form-group">
                             <label>عنوان التبليغ الرسمي</label>
-                            <input type="text" id="noticeTitle" required>
+                            <div class="input-with-icon">
+                                <input type="text" id="noticeTitle" required>
+                                <i class="fa-solid fa-heading"></i>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>الجهة المستهدفة بالتبليغ</label>
-                            <select id="noticeTarget">
-                                <option value="الجميع">الجميع (مدرسين وطلاب)</option>
-                                <option value="الكادر التدريسي">الكادر التدريسي فقط</option>
-                                <option value="الطلاب وأولياء الأمور">الطلاب وأولياء الأمور فقط</option>
-                            </select>
+                            <div class="input-with-icon">
+                                <select id="noticeTarget">
+                                    <option value="الجميع">الجميع (مدرسين وطلاب)</option>
+                                    <option value="الكادر التدريسي">الكادر التدريسي فقط</option>
+                                    <option value="الطلاب وأولياء الأمور">الطلاب وأولياء الأمور فقط</option>
+                                </select>
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>نص التعميم الإداري</label>
-                            <textarea id="noticeBody" style="width:100%; padding:12px; border-radius:12px; background:#f8fafc; min-height:80px;" required></textarea>
+                            <div class="input-with-icon">
+                                <textarea id="noticeBody" style="min-height:90px;" required></textarea>
+                                <i class="fa-solid fa-comment-dots" style="top:16px;"></i>
+                            </div>
                         </div>
                         <button type="submit" class="btn-action btn-dark">نشر وتعميم التبليغ فوراً</button>
                     </form>
                 </div>
                 <div class="excel-panel">
-                    <h3><i class="fas fa-history"></i> سجل التبليغات النشطة الصادرة</h3>
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> سجل التبليغات النشطة الصادرة</h3>
                     <div class="excel-table-wrapper">
                         <table class="excel-table">
                             <thead><tr><th>التاريخ</th><th>العنوان</th><th>المستهدف</th><th>نص التبليغ</th><th class="admin-only-cell">حذف</th></tr></thead>
@@ -525,38 +698,61 @@
 
         <div class="modal-overlay" id="settingsModal">
             <div class="modal-content">
-                <button class="close-modal-btn" onclick="closeModal('settingsModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#0d9488;"><i class="fas fa-sliders-h"></i> إعدادات النظام المدرسية وتوزيع القاعات</h2>
+                <button class="close-modal-btn" onclick="closeModal('settingsModal')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2 style="font-size:16px; font-weight:700; color:#0d9488;"><i class="fa-solid fa-sliders" style="margin-left:5px;"></i> إعدادات النظام المدرسية وتوزيع القاعات</h2>
                 
                 <div class="form-panel">
-                    <div class="form-title teal"><i class="fas fa-edit"></i> تخصيص معلومات الهيدر والواجهات</div>
+                    <div class="form-title teal"><i class="fa-solid fa-pen-to-square" style="color:#0d9488; margin-left:5px;"></i> تخصيص معلومات الواجهات</div>
                     <div class="form-group">
                         <label>اسم المنصة الرسمي (يظهر بالأعلى وفي الهويات)</label>
-                        <input type="text" id="inputSchoolName" value="منصة الفيزياء - السادس العلمي" oninput="updateSchoolName()">
+                        <div class="input-with-icon">
+                            <input type="text" id="inputSchoolName" value="المنصة التعليمية الشاملة" oninput="updateSchoolName()">
+                            <i class="fa-solid fa-school"></i>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-panel">
-                    <div class="form-title teal"><i class="fas fa-plus-circle"></i> إضافة قاعة دراسية جديدة للمعهد</div>
+                    <div class="form-title teal"><i class="fa-solid fa-circle-plus" style="color:#0d9488; margin-left:5px;"></i> إضافة قاعة دراسية جديدة ديناميكياً</div>
                     <div class="grid-2">
                         <div class="form-group">
-                            <label>اسم القاعة</label>
-                            <input type="text" id="newHallNameInput" placeholder="مثال: قاعة أينشتاين">
+                            <label>اسم القاعة الجديد</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="newHallNameInput" placeholder="مثال: قاعة المتفوقين">
+                                <i class="fa-solid fa-door-open"></i>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>المرحلة الدراسية</label>
-                            <select id="newHallLevelSelect">
-                                <option value="السادس العلمي">السادس العلمي</option>
-                                <option value="الخامس العلمي">الخامس العلمي</option>
-                                <option value="الرابع الإعدادي">الرابع الإعدادي</option>
-                            </select>
+                            <label>المرحلة الدراسية المرتبطة</label>
+                            <div class="input-with-icon">
+                                <select id="newHallLevelSelect">
+                                    <option value="الأول ابتدائي">الأول ابتدائي</option>
+                                    <option value="الثاني ابتدائي">الثاني ابتدائي</option>
+                                    <option value="الثالث ابتدائي">الثالث ابتدائي</option>
+                                    <option value="الرابع ابتدائي">الرابع ابتدائي</option>
+                                    <option value="الخامس ابتدائي">الخامس ابتدائي</option>
+                                    <option value="السادس ابتدائي">السادس ابتدائي</option>
+                                    <option value="الأول متوسط">الأول متوسط</option>
+                                    <option value="الثاني متوسط">الثاني متوسط</option>
+                                    <option value="الثالث متوسط">الثالث متوسط</option>
+                                    <option value="الرابع إعدادي">الرابع إعدادي</option>
+                                    <option value="الخامس إعدادي">الخامس إعدادي</option>
+                                    <option value="السادس العلمي">السادس العلمي</option>
+                                    <option value="السادس الأدبي">السادس الأدبي</option>
+                                </select>
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
                         </div>
                     </div>
-                    <button type="button" class="btn-action btn-teal" onclick="addNewHallDynamic()"><i class="fas fa-plus"></i> اعتماد وإضافة القاعة للسيستم</button>
+                    <button type="button" class="btn-action btn-teal" onclick="addNewHallDynamic()"><i class="fa-solid fa-plus"></i> اعتماد وتفعيل اسم القاعة للسيستم</button>
                 </div>
 
                 <div class="excel-panel">
-                    <h3><i class="fas fa-layer-group"></i> تقسيم هيكلية القاعات حسب الصفوف والمراحل الدراسية</h3>
+                    <h3><i class="fa-solid fa-layer-group"></i> تقسيم هيكلية القاعات حسب الصفوف والمراحل</h3>
                     <div style="margin-top:12px;" id="stagesHallsRowsContainer"></div>
                 </div>
 
@@ -565,17 +761,35 @@
         </div>
 
         <div class="bottom-nav-bar" id="bottomNavBar">
-            <div class="nav-tab" id="navTabStudents" onclick="openModal('studentsModal')"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i><span style="color:#3b82f6;">الطلاب</span></div>
-            <div class="nav-tab" id="navTabTeachers" onclick="openModal('teachersModal')"><i class="fas fa-chalkboard-teacher"></i><span>المدرسين</span></div>
-            <div class="nav-tab" id="navTabSchedule" onclick="openModal('scheduleModal'); loadAndBuildSchedule();"><i class="fas fa-calendar-alt"></i><span>الجداول</span></div>
-            <div class="nav-tab" id="navTabAttendance" onclick="openModal('attendanceModal'); prepareAttendanceForm();"><i class="fas fa-qrcode"></i><span>الغيابات</span></div>
-            <div class="nav-tab" id="navTabNotices" onclick="openModal('noticesModal')"><i class="fas fa-bullhorn"></i><span>التبليغات</span></div>
-            <div class="nav-tab" id="navTabSettings" onclick="openModal('settingsModal')"><i class="fas fa-cog"></i><span>الإعدادات</span></div>
+            <div class="nav-tab active" id="navTabStudents" onclick="openModal('studentsModal')">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span>الطلاب</span>
+            </div>
+            <div class="nav-tab" id="navTabTeachers" onclick="openModal('teachersModal')">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <span>المدرسين</span>
+            </div>
+            <div class="nav-tab" id="navTabSchedule" onclick="openModal('scheduleModal'); loadAndBuildSchedule();">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>الجداول</span>
+            </div>
+            <div class="nav-tab" id="navTabAttendance" onclick="openModal('attendanceModal'); prepareAttendanceForm();">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>الغيابات</span>
+            </div>
+            <div class="nav-tab" id="navTabNotices" onclick="openModal('noticesModal')">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>التبليغات</span>
+            </div>
+            <div class="nav-tab" id="navTabSettings" onclick="openModal('settingsModal')">
+                <i class="fa-solid fa-gear"></i>
+                <span>الإعدادات</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- إعدادات سحابة Firebase الرسمية ---
+        // --- إعدادات سحابة Firebase الرسمية المحفوظة بالكامل ---
         const firebaseConfig = {
             apiKey: "AIzaSyAIg9wqTc4HYwIocwvx72yOobdYm5W2DNA",
             authDomain: "school-ad54a.firebaseapp.com",
@@ -587,6 +801,29 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // --- إعداد نظام التخزين المحلي والمزامنة التلقائية (IndexedDB) للعمل أوفلاين ---
+        let localIndexedDB;
+        const dbRequest = indexedDB.open("OfflineAttendanceDB", 1);
+
+        dbRequest.onupgradeneeded = function(event) {
+            localIndexedDB = event.target.result;
+            if (!localIndexedDB.objectStoreNames.contains("pendingAttendance")) {
+                localIndexedDB.createObjectStore("pendingAttendance", { keyPath: "id", autoIncrement: true });
+            }
+        };
+
+        dbRequest.onsuccess = function(event) {
+            localIndexedDB = event.target.result;
+            console.log("تم تفعيل قاعدة البيانات المحلية بنجاح.");
+            if (navigator.onLine) {
+                syncAttendanceToCloud();
+            }
+        };
+
+        dbRequest.onerror = function(event) {
+            console.error("خطأ في فتح قاعدة البيانات المحلية:", event.target.errorCode);
+        };
 
         let studentsDatabase = {};
         let teachersDatabase = {};
@@ -604,11 +841,10 @@
         let currentTeacherSessionName = "";
         let currentTeacherSessionId = ""; 
 
-        // جلب خريطة القاعات من الـ localStorage لضمان استقرارها وثباتها بهاتفك
         let levelRoomsMapping = JSON.parse(localStorage.getItem('saved_level_rooms')) || {
-            "السادس العلمي": ["قاعة أينشتاين", "قاعة نيوتن", "قاعة تسلا"],
-            "الخامس العلمي": ["قاعة النخبة"],
-            "الرابع الإعدادي": ["قاعة الإبداع"]
+            "الأول ابتدائي": ["قاعة البراعم"],
+            "السادس العلمي": ["قاعة أينشتاين", "قاعة نيوتن"],
+            "السادس الأدبي": ["قاعة ابن خلدون"]
         };
 
         window.onload = function() {
@@ -693,7 +929,7 @@
         function attemptManagerLogin() {
             const emailInput = document.getElementById('managerEmailInput').value.trim();
             const pass = document.getElementById('managerPassword').value.trim();
-            if(emailInput === "Manager.school@gmail.com" && pass === "20162027") {
+            if(emailInput === "Manager.school@gmail.com" && pass === "20262027") {
                 currentSessionRole = "manager";
                 initializeSession();
             } else {
@@ -726,7 +962,7 @@
 
             if(currentSessionRole === 'manager') {
                 subtext.innerText = "لوحة التحكم السحابية - المدير العام للمنظومة";
-                roleIcon.innerHTML = `<i class="fas fa-user-shield"></i>`;
+                roleIcon.innerHTML = `<i class="fa-solid fa-user-shield"></i>`;
                 document.getElementById('cardStudents').style.display = "flex";
                 document.getElementById('cardTeachers').style.display = "flex";
                 document.getElementById('cardSchedule').style.display = "flex";
@@ -742,7 +978,7 @@
                 document.getElementById('navTabSettings').style.display = "flex";
             } else if(currentSessionRole === 'teacher') {
                 subtext.innerText = `أهلاً بك أ. ${currentTeacherSessionName}`;
-                roleIcon.innerHTML = `<i class="fas fa-chalkboard-teacher"></i>`;
+                roleIcon.innerHTML = `<i class="fa-solid fa-chalkboard-user"></i>`;
                 document.getElementById('cardStudents').style.display = "none";
                 document.getElementById('cardTeachers').style.display = "none";
                 document.getElementById('cardSchedule').style.display = "flex"; 
@@ -767,8 +1003,20 @@
             stopCamera(); stopQRReader();
         }
 
-        function openModal(id) { document.getElementById(id).style.display = 'block'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function openModal(id) { 
+            document.getElementById(id).style.display = 'block'; 
+            document.querySelectorAll('.bottom-nav-bar .nav-tab').forEach(tab => tab.classList.remove('active'));
+            if(id === 'studentsModal') document.getElementById('navTabStudents').classList.add('active');
+            if(id === 'teachersModal') document.getElementById('navTabTeachers').classList.add('active');
+            if(id === 'scheduleModal') document.getElementById('navTabSchedule').classList.add('active');
+            if(id === 'attendanceModal') document.getElementById('navTabAttendance').classList.add('active');
+            if(id === 'noticesModal') document.getElementById('navTabNotices').classList.add('active');
+            if(id === 'settingsModal') document.getElementById('navTabSettings').classList.add('active');
+        }
+        
+        function closeModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+        }
 
         function updateSchoolName() {
             const currentName = document.getElementById('inputSchoolName').value;
@@ -781,20 +1029,12 @@
             const levelName = document.getElementById('newHallLevelSelect').value;
 
             if(hallName === "") { alert("يرجى كتابة اسم القاعة أولاً!"); return; }
-            
-            if(!levelRoomsMapping[levelName]) {
-                levelRoomsMapping[levelName] = [];
-            }
-
-            if(levelRoomsMapping[levelName].includes(hallName)) {
-                alert("هذه القاعة موجودة بالفعل في هذه المرحلة!");
-                return;
-            }
+            if(!levelRoomsMapping[levelName]) { levelRoomsMapping[levelName] = []; }
+            if(levelRoomsMapping[levelName].includes(hallName)) { alert("هذه القاعة موجودة بالفعل في هذه المرحلة الدراسية!"); return; }
 
             levelRoomsMapping[levelName].push(hallName);
             localStorage.setItem('saved_level_rooms', JSON.stringify(levelRoomsMapping));
             document.getElementById('newHallNameInput').value = "";
-            
             refreshSystemRooms();
             alert(`تمت إضافة ${hallName} إلى صف ${levelName} بنجاح.`);
         }
@@ -827,8 +1067,10 @@
                 levelRoomsMapping[lvl].forEach(hall => {
                     hallsListDiv.innerHTML += `
                         <div class="hall-item-badge">
-                            <span><i class="fas fa-door-open" style="color:#0d9488; margin-left:4px;"></i> ${hall}</span>
-                            <button type="button" class="btn-remove-badge" onclick="removeHallDynamic('${lvl}', '${hall}')"><i class="fas fa-times-circle"></i></button>
+                            <span><i class="fa-solid fa-door-open" style="color:#0d9488; margin-left:4px;"></i> ${hall}</span>
+                            <button type="button" class="btn-remove-badge" onclick="removeHallDynamic('${lvl}', '${hall}')">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+                            </button>
                         </div>`;
                     dropdownFilter.innerHTML += `<option value="${hall}">${hall} (${lvl})</option>`;
                     attendanceRoomSelect.innerHTML += `<option value="${hall}">${hall}</option>`;
@@ -836,7 +1078,6 @@
                 rowBlock.appendChild(hallsListDiv);
                 stagesContainer.appendChild(rowBlock);
             });
-
             filterRoomsByLevelInForm();
         }
 
@@ -855,12 +1096,8 @@
         function filterStudentsTableByHall() {
             const selectedHall = document.getElementById('hallFilterDropdown').value;
             const printTitle = document.getElementById('printStudentsHeaderTitle');
-            
-            if(selectedHall === "all") {
-                printTitle.innerText = "سجل أسماء وقوائم الطلاب الإجمالية - معهد آراي";
-            } else {
-                printTitle.innerText = `قائمة كشف طلاب: [ ${selectedHall} ] - معهد آراي`;
-            }
+            if(selectedHall === "all") { printTitle.innerText = "سجل أسماء وقوائم الطلاب الإجمالية"; } 
+            else { printTitle.innerText = `قائمة كشف طلاب: [ ${selectedHall} ]`; }
             searchStudents(); 
         }
 
@@ -871,7 +1108,7 @@
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(function(stream) { videoStream = stream; video.srcObject = stream; })
-                .catch(function(error) { alert("تعذر فتح الكاميرا الخلفية الهاتفية."); });
+                .catch(function(error) { alert("تعذر فتح الكاميرا الخلفية لعدم توفر الصلاحية."); });
             }
         }
 
@@ -924,16 +1161,13 @@
             let photo = document.getElementById('studentPhotoBase64').value || defaultPhoto;
 
             if (id) {
-                db.collection("students").doc(id.toString()).update({
-                    name, phone, mother, level, room, photo
-                }).then(() => { alert("تم تحديث حساب الطالب سحابياً بنجاح."); });
+                db.collection("students").doc(id.toString()).update({ name, phone, mother, level, room, photo })
+                .then(() => { alert("تم تحديث حساب الطالب سحابياً بنجاح."); });
             } else {
                 const nextId = globalStudentCounter + 1;
                 const generatedQRToken = `STUDENT-ID:${nextId}`;
-                
-                db.collection("students").doc(nextId.toString()).set({
-                    id: nextId, name, phone, mother, level, room, photo, qrToken: generatedQRToken
-                }).then(() => { alert("تم حفظ الطالب الجديد وتوليد بياناته سحابياً."); });
+                db.collection("students").doc(nextId.toString()).set({ id: nextId, name, phone, mother, level, room, photo, qrToken: generatedQRToken })
+                .then(() => { alert("تم حفظ الطالب الجديد وتوليد بياناته سحابياً."); });
             }
             resetStudentForm();
         }
@@ -944,7 +1178,7 @@
             document.getElementById('studentPhotoBase64').value = "";
             document.getElementById('cameraPreview').style.display = "none";
             document.getElementById('formActionTitle').innerText = "إضافة طالب جديد وتوليد بيانات الهوية";
-            document.getElementById('submitBtn').innerHTML = `<i class="fas fa-save"></i> حفظ سحابي وتوليد الـ QR والهوية`;
+            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> حفظ سحابي وتوليد الـ QR والهوية`;
             document.getElementById('cancelEditBtn').style.display = "none";
             filterRoomsByLevelInForm();
             stopCamera();
@@ -956,7 +1190,6 @@
 
             Object.values(dataObject).forEach(st => {
                 if(filterHallValue !== "all" && st.room !== filterHallValue) return;
-
                 tbody.innerHTML += `<tr>
                     <td class="no-print"><img src="${st.photo}" class="table-avatar"></td>
                     <td><strong>${st.name}</strong></td>
@@ -964,9 +1197,9 @@
                     <td><span class="room-badge">${st.room}</span></td>
                     <td>${st.phone}</td>
                     <td class="no-print">
-                        <button class="btn-table-action btn-edit" onclick="editStudent(${st.id})" title="تعديل"><i class="fas fa-edit"></i></button>
-                        <button class="btn-table-action btn-print" onclick="showStudentID(${st.id})" title="الهوية"><i class="fas fa-id-card"></i> الهوية</button>
-                        <button class="btn-table-action btn-delete" onclick="deleteStudent(${st.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                        <button class="btn-table-action btn-edit" onclick="editStudent(${st.id})" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn-table-action btn-print" onclick="showStudentID(${st.id})" title="الهوية"><i class="fa-solid fa-id-card"></i></button>
+                        <button class="btn-table-action btn-delete" onclick="deleteStudent(${st.id})" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>`;
             });
@@ -989,7 +1222,7 @@
                     document.getElementById('cameraPreview').style.display = "block";
                 }
                 document.getElementById('formActionTitle').innerText = "تعديل بيانات الطالب الحالية سحابياً";
-                document.getElementById('submitBtn').innerHTML = `<i class="fas fa-check-double"></i> تحديث وتعديل السحابي`;
+                document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-user-check"></i> تحديث وتعديل السحابي`;
                 document.getElementById('cancelEditBtn').style.display = "block";
                 document.getElementById('studentsModal').scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -1006,13 +1239,10 @@
             const query = document.getElementById('searchBar').value.toLowerCase().trim();
             const filterHallValue = document.getElementById('hallFilterDropdown').value;
             let filtered = {};
-            
             Object.values(studentsDatabase).forEach(st => { 
                 const matchesSearch = (query === "" || st.name.toLowerCase().includes(query));
                 const matchesHall = (filterHallValue === "all" || st.room === filterHallValue);
-                if(matchesSearch && matchesHall) { 
-                    filtered[st.id] = st; 
-                } 
+                if(matchesSearch && matchesHall) { filtered[st.id] = st; } 
             });
             renderStudents(filtered);
         }
@@ -1028,7 +1258,7 @@
             document.getElementById('idCardPhoto').src = student.photo;
 
             const qrContainer = document.getElementById("qrcode"); qrContainer.innerHTML = "";
-            new QRCode(qrContainer, { text: student.qrToken, width: 85, height: 85 });
+            new QRCode(qrContainer, { text: student.qrToken, width: 80, height: 80 });
             document.getElementById('idWrapper').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1045,10 +1275,9 @@
             let restDays = []; document.querySelectorAll('input[name="restDays"]:checked').forEach(cb => restDays.push(cb.value));
             if(restDays.length === 0) restDays.push("لا يوجد");
 
-            db.collection("teachers").doc(nextId.toString()).set({
-                id: nextId, code: autoGeneratedCode, name, spec, phone, lessons: totalLessons, rooms, restDays, username, password
-            }).then(() => {
-                alert("تم رفع المدرس الجديد وتوليد حسابه السحابي.");
+            db.collection("teachers").doc(nextId.toString()).set({ id: nextId, code: autoGeneratedCode, name, spec, phone, lessons: totalLessons, rooms, restDays, username, password })
+            .then(() => {
+                alert(`✅ تم رفع المدرس الجديد وتوليد حسابه السحابي!\n\nاسم المستخدم: ${username}\nرمز المرور: ${password}`);
                 document.getElementById('teacherForm').reset();
                 document.getElementById('noRestCheck').checked = false;
                 toggleNoRest(document.getElementById('noRestCheck')); calculateLessonsTotal();
@@ -1059,28 +1288,27 @@
             const tbody = document.getElementById('teacherTableBody'); tbody.innerHTML = "";
             Object.values(teachersDatabase).forEach(tc => {
                 let restBadges = tc.restDays.map(d => `<span class="rest-badge">${d}</span>`).join(' ');
-                tbody.innerHTML += `<tr><td><code>${tc.code}</code></td><td><strong>${tc.name}</strong></td><td><span class="spec-badge">${tc.spec}</span></td><td><b>${tc.lessons} حصة</b></td><td><span class="account-badge">${tc.username}</span></td><td>${restBadges}</td><td class="no-print"><button style="border:none; width:32px; height:32px; border-radius:8px; background-color:#fee2e2; color:#dc2626;" onclick="deleteTeacher(${tc.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td><code>${tc.code}</code></td><td><strong>${tc.name}</strong></td><td><span class="spec-badge">${tc.spec}</span></td><td><b>${tc.lessons} حصة</b></td><td><span class="account-badge">${tc.username}</span></td><td>${restBadges}</td><td class="no-print"><button class="btn-table-action btn-delete" onclick="deleteTeacher(${tc.id})"><i class="fa-solid fa-trash-can"></i></button></td></tr>`;
             });
             document.getElementById('mainTeacherCount').innerText = `${Object.keys(teachersDatabase).length} مدرسين`;
         }
 
         function deleteTeacher(id) {
-            if(confirm("حذف المدرس نهائياً من قاعدة البيانات السحابية؟")) { db.collection("teachers").doc(id.toString()).delete(); }
+            if(confirm("حذف المدرس نهائياً من قاعدة البيانات السحابية؟")) { 
+                db.collection("teachers").doc(id.toString()).delete().then(() => { alert("تم حذف المدرس بنجاح."); });
+            }
         }
 
-        // --- نظام بناء وإدارة الجدول الذكي السحابي ---
         function loadAndBuildSchedule() {
             const container = document.getElementById('dynamicScheduleContainer'); container.innerHTML = "";
             const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
-            
             let roomsArr = [];
             Object.values(levelRoomsMapping).forEach(arr => { roomsArr = roomsArr.concat(arr); });
-
             const startTime = document.getElementById('startTime').value; const duration = parseInt(document.getElementById('lessonDuration').value) || 45;
 
             days.forEach(day => {
                 let dayBlock = document.createElement('div'); dayBlock.className = 'day-block';
-                let title = document.createElement('div'); title.className = 'day-title'; title.innerHTML = `<i class="fas fa-calendar-day"></i> جدول الحصص ليوم [ ${day} ]`;
+                let title = document.createElement('div'); title.className = 'day-title'; title.innerHTML = `<i class="fa-solid fa-calendar-day"></i> جدول الحصص ليوم [ ${day} ]`;
                 dayBlock.appendChild(title);
                 let wrapper = document.createElement('div'); wrapper.className = 'excel-table-wrapper';
                 let table = document.createElement('table'); table.className = 'excel-table';
@@ -1106,18 +1334,12 @@
                         select.setAttribute('data-day', day); 
                         select.setAttribute('data-lesson', lessonIndex); 
                         select.setAttribute('data-room', room);
-                        
                         select.setAttribute('onchange', `saveScheduleCell('${docId}')`);
-                        
-                        if(currentSessionRole === 'teacher') {
-                            select.disabled = true;
-                        }
+                        if(currentSessionRole === 'teacher') { select.disabled = true; }
 
                         select.innerHTML = `<option value="">شاغر</option>`;
                         Object.values(teachersDatabase).forEach(tc => {
-                            if (!tc.restDays.includes(day)) { 
-                                select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; 
-                            }
+                            if (!tc.restDays.includes(day)) { select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; }
                         });
                         td.appendChild(select); tr.appendChild(td);
                     });
@@ -1129,58 +1351,33 @@
         }
 
         function saveScheduleCell(docId) {
-            if(currentSessionRole !== 'manager') {
-                alert("عذراً، المدير فقط من يملك صلاحية تعديل جدول الحصص.");
-                applySavedScheduleToUI();
-                return;
-            }
-            const selectEl = document.getElementById(docId);
-            const val = selectEl.value;
+            if(currentSessionRole !== 'manager') { alert("عذراً، المدير فقط من يملك صلاحية تعديل جدول الحصص."); applySavedScheduleToUI(); return; }
+            const selectEl = document.getElementById(docId); const val = selectEl.value;
 
             if (val !== "") {
-                const day = selectEl.getAttribute('data-day');
-                const lesson = selectEl.getAttribute('data-lesson');
-                const room = selectEl.getAttribute('data-room');
-                
-                let isCollision = false;
-                const allSelects = document.querySelectorAll('.schedule-select');
+                const day = selectEl.getAttribute('data-day'); const lesson = selectEl.getAttribute('data-lesson');
+                let isCollision = false; const allSelects = document.querySelectorAll('.schedule-select');
                 allSelects.forEach(el => {
-                    if (el.id !== docId && el.getAttribute('data-day') === day && el.getAttribute('data-lesson') === lesson && el.value === val) {
-                        isCollision = true;
-                    }
+                    if (el.id !== docId && el.getAttribute('data-day') === day && el.getAttribute('data-lesson') === lesson && el.value === val) { isCollision = true; }
                 });
-
                 if (isCollision) {
-                    alert(`⚠️ تنبيه تضارب: هذا المدرس محجوز بالفعل في نفس الوقت (اليوم: ${day} | الدرس: ${lesson}) في قاعة أخرى! برجاء اختيار وقت آخر.`);
-                    selectEl.value = ""; 
-                    checkScheduleCollisions();
-                    return;
+                    alert(`⚠️ تنبيه تضارب: هذا المدرس محجوز بالفعل في نفس الوقت بقاعة أخرى!`);
+                    selectEl.value = ""; checkScheduleCollisions(); return;
                 }
             }
-
-            if(val === "") {
-                db.collection("schedule").doc(docId).delete();
-            } else {
-                db.collection("schedule").doc(docId).set({ teacherId: val });
-            }
+            if(val === "") { db.collection("schedule").doc(docId).delete(); } 
+            else { db.collection("schedule").doc(docId).set({ teacherId: val }); }
         }
 
         function applySavedScheduleToUI() {
             const selects = document.querySelectorAll('.schedule-select');
-            selects.forEach(el => {
-                el.classList.remove('my-own-lesson');
-                el.value = "";
-            });
-
+            selects.forEach(el => { el.value = ""; el.classList.remove('my-own-lesson'); });
             Object.keys(globalScheduleDatabase).forEach(docId => {
                 const el = document.getElementById(docId);
                 if(el) { 
                     const assignedTeacherId = globalScheduleDatabase[docId];
                     el.value = assignedTeacherId; 
-                    
-                    if(currentSessionRole === 'teacher' && assignedTeacherId === currentTeacherSessionId) {
-                        el.classList.add('my-own-lesson');
-                    }
+                    if(currentSessionRole === 'teacher' && assignedTeacherId === currentTeacherSessionId) { el.classList.add('my-own-lesson'); }
                 }
             });
             checkScheduleCollisions();
@@ -1189,7 +1386,6 @@
         function checkScheduleCollisions() {
             const selects = document.querySelectorAll('.schedule-select');
             selects.forEach(el => el.classList.remove('collision-danger'));
-
             const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
             days.forEach(day => {
                 for(let lesson = 1; lesson <= 5; lesson++) {
@@ -1204,11 +1400,7 @@
                         }
                     });
                     Object.keys(teacherCountInLesson).forEach(tId => {
-                        if(teacherCountInLesson[tId].length > 1) {
-                            teacherCountInLesson[tId].forEach(el => {
-                                el.classList.add('collision-danger');
-                            });
-                        }
+                        if(teacherCountInLesson[tId].length > 1) { teacherCountInLesson[tId].forEach(el => { el.classList.add('collision-danger'); }); }
                     });
                 }
             });
@@ -1217,17 +1409,15 @@
         function rebuildAndClearSchedule() {
             if(confirm("هل أنت متأكد من تصفير الجدول وحذف جميع توزيعات المدرسين الحالية من السحابة؟")) {
                 db.collection("schedule").get().then((snapshot) => {
-                    let batch = db.batch();
-                    snapshot.forEach(doc => batch.delete(doc.ref));
-                    batch.commit().then(() => {
-                        alert("تم تصفير الجدول سحابياً بنجاح.");
-                        loadAndBuildSchedule();
-                    });
+                    let batch = db.batch(); snapshot.forEach(doc => batch.delete(doc.ref));
+                    batch.commit().then(() => { alert("تم تصفير الجدول سحابياً بنجاح."); loadAndBuildSchedule(); });
                 });
             }
         }
 
         function prepareAttendanceForm() {
+            scannedPresentStudentIds = [];
+            document.getElementById('qrScanStatusFeed').innerText = "مستعد لبدء مسح جديد للقاعة المحددة...";
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             renderClassLiveStatusTable();
         }
@@ -1242,7 +1432,7 @@
                     tbody.innerHTML += `<tr><td><strong>${st.name}</strong></td><td>${scannedPresentStudentIds.includes(st.id) ? `<span class="status-present">✔ حاضر بالـ QR</span>` : `<span class="status-absent">❌ غائب</span>`}</td></tr>`;
                 }
             });
-            if (!classHasStudents) tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">لا يوجد طلاب بالقاعة.</td></tr>`;
+            if (!classHasStudents) tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">لا يوجد طلاب مسجلين بهذه القاعة حالياً.</td></tr>`;
         }
 
         function startQRReader() {
@@ -1268,46 +1458,80 @@
             if (html5QrScanner && html5QrScanner.isScanning) {
                 html5QrScanner.stop().then(() => {
                     document.getElementById('qrScannerContainer').style.display = 'none';
-                    document.getElementById('btnStartQR').style.display = 'inline-flex'; 
-                    document.getElementById('btnStopQR').style.display = 'none';
+                    document.getElementById('btnStartQR').style.display = 'inline-flex'; document.getElementById('btnStopQR').style.display = 'none';
                 });
             } else {
                 document.getElementById('qrScannerContainer').style.display = 'none';
-                document.getElementById('btnStartQR').style.display = 'inline-flex'; 
-                document.getElementById('btnStopQR').style.display = 'none';
+                document.getElementById('btnStartQR').style.display = 'inline-flex'; document.getElementById('btnStopQR').style.display = 'none';
             }
         }
 
         function saveDailyAttendance() {
             const currentRoom = document.getElementById('attendanceRoomFilter').value;
             const dateStr = document.getElementById('attendanceDate').value;
-            let batch = db.batch();
-
             const daysOfWeek = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-            const dateObj = new Date(dateStr);
-            const currentDayName = daysOfWeek[dateObj.getDay()];
+            const dateObj = new Date(dateStr); const currentDayName = daysOfWeek[dateObj.getDay()];
 
+            let absentRecords = [];
             Object.values(studentsDatabase).forEach(st => {
                 if (st.room === currentRoom && !scannedPresentStudentIds.includes(st.id)) {
-                    let newDocRef = db.collection("attendance").doc();
-                    batch.set(newDocRef, {
-                        date: dateStr, 
-                        dayName: currentDayName, 
-                        roomName: currentRoom, 
-                        studentName: st.name, 
-                        status: "غائب", 
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    absentRecords.push({ date: dateStr, dayName: currentDayName, roomName: currentRoom, studentName: st.name, status: "غائب" });
                 }
             });
 
-            batch.commit().then(() => { stopQRReader(); alert("تم إرسال وقفل الكشف في السحابة بنجاح!"); });
+            if (absentRecords.length === 0) { alert("لم يتم العثور على غيابات لقفل الكشف."); stopQRReader(); return; }
+
+            if (navigator.onLine) {
+                let batch = db.batch();
+                absentRecords.forEach(rec => {
+                    let newDocRef = db.collection("attendance").doc();
+                    rec.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                    batch.set(newDocRef, rec);
+                });
+                batch.commit().then(() => { stopQRReader(); alert("تم إرسال وقفل كشف الغيابات في السحابة بنجاح! ✅"); })
+                .catch(err => { saveAttendanceToLocalStore(absentRecords); });
+            } else {
+                saveAttendanceToLocalStore(absentRecords);
+            }
         }
+
+        function saveAttendanceToLocalStore(recordsList) {
+            if (!localIndexedDB) { alert("خطأ: التخزين المحلي غير جاهز."); return; }
+            const transaction = localIndexedDB.transaction(["pendingAttendance"], "readwrite");
+            const store = transaction.objectStore("pendingAttendance");
+            const payload = { createdAt: new Date().toISOString(), data: recordsList };
+            store.add(payload).onsuccess = function() { stopQRReader(); alert("📡 تم الحفظ محلياً بأجهزة الأوفلاين! سيتم الرفع تلقائياً عند الاتصال."); };
+        }
+
+        function syncAttendanceToCloud() {
+            if (!localIndexedDB) return;
+            const transaction = localIndexedDB.transaction(["pendingAttendance"], "readwrite");
+            const store = transaction.objectStore("pendingAttendance");
+            const getAllRequest = store.getAll();
+
+            getAllRequest.onsuccess = function() {
+                const pendingItems = getAllRequest.result; if (pendingItems.length === 0) return;
+                pendingItems.forEach((item) => {
+                    let batch = db.batch();
+                    item.data.forEach(rec => {
+                        let newDocRef = db.collection("attendance").doc();
+                        rec.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                        batch.set(newDocRef, rec);
+                    });
+                    batch.commit().then(() => {
+                        const deleteTransaction = localIndexedDB.transaction(["pendingAttendance"], "readwrite");
+                        deleteTransaction.objectStore("pendingAttendance").delete(item.id);
+                    });
+                });
+            };
+        }
+
+        window.addEventListener('online', syncAttendanceToCloud);
 
         function renderAttendanceArchive() {
             const tbody = document.getElementById('attendanceArchiveTableBody'); tbody.innerHTML = "";
             attendanceArchive.forEach(rec => {
-                tbody.innerHTML += `<tr><td><code>${rec.date}</code></td><td>${rec.dayName}</td><td>${rec.roomName}</td><td><strong>${rec.studentName}</strong></td><td><span class="status-absent">غائب</span></td><td><button style="border:none; width:32px; height:32px; background-color:#fee2e2; color:#dc2626;" onclick="deleteAttendanceRecord('${rec.firebaseDocId}')"><i class="fas fa-times"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td><code>${rec.date}</code></td><td>${rec.dayName}</td><td>${rec.roomName}</td><td><strong>${rec.studentName}</strong></td><td><span class="status-absent">غائب</span></td><td><button class="btn-table-action btn-delete" onclick="deleteAttendanceRecord('${rec.firebaseDocId}')"><i class="fa-solid fa-xmark"></i></button></td></tr>`;
             });
             document.getElementById('mainAbsencesCount').innerText = `${attendanceArchive.length} غيابات`;
         }
@@ -1319,19 +1543,14 @@
         function handleNoticeSubmit(event) {
             event.preventDefault();
             const title = document.getElementById('noticeTitle').value; const target = document.getElementById('noticeTarget').value; const body = document.getElementById('noticeBody').value;
-            
-            db.collection("notices").add({
-                date: new Date().toLocaleDateString('ar-IQ'), title, target, body, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('noticeForm').reset();
-                alert("تم نشر التعميم والتبليغ سحابياً بنجاح.");
-            });
+            db.collection("notices").add({ date: new Date().toLocaleDateString('ar-IQ'), title, target, body, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(() => { document.getElementById('noticeForm').reset(); alert("تم نشر التعميم والتبليغ سحابياً بنجاح."); });
         }
 
         function renderNotices() {
             const tbody = document.getElementById('noticesTableBody'); tbody.innerHTML = "";
             noticesDatabase.forEach(nt => {
-                tbody.innerHTML += `<tr><td><code>${nt.date}</code></td><td><strong>${nt.title}</strong></td><td><span class="notice-badge">${nt.target}</span></td><td>${nt.body}</td><td class="admin-only-cell"><button style="border:none; width:32px; height:32px; background-color:#fee2e2; color:#dc2626;" onclick="deleteNotice('${nt.firebaseDocId}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td><code>${nt.date}</code></td><td><strong>${nt.title}</strong></td><td><span class="notice-badge">${nt.target}</span></td><td>${nt.body}</td><td class="admin-only-cell"><button class="btn-table-action btn-delete" onclick="deleteNotice('${nt.firebaseDocId}')"><i class="fa-solid fa-trash-can"></i></button></td></tr>`;
             });
             document.getElementById('mainNoticesCount').innerText = `${noticesDatabase.length} تبليغات`;
         }
@@ -1345,7 +1564,7 @@
         function exportStudentsToExcel() {
             let table = document.getElementById("studentMainTable");
             let wb = XLSX.utils.table_to_book(table, {sheet: "الطلاب"});
-            XLSX.writeFile(wb, "سجل_الطلاب_منصة_الفيزياء.xlsx");
+            XLSX.writeFile(wb, "سجل_الطلاب_المنصة_التعليمية.xlsx");
         }
 
         function exportStudentsToPDF() {
