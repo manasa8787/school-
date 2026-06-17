@@ -53,7 +53,7 @@
         .card-teal { background: linear-gradient(135deg, #0d9488, #115e59); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; overflow-y: auto; padding: 20px 16px; }
-        .modal-content { background: #f4f7f6; border-radius: 24px; max-width: 650px; margin: 0 auto; padding: 20px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .modal-content { background: #f4f7f6; border-radius: 24px; max-width: 750px; margin: 0 auto; padding: 20px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
         .close-modal-btn { position: absolute; top: 15px; left: 15px; background: #e2e8f0; border: none; width: 32px; height: 32px; border-radius: 50%; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .form-panel { background: white; border-radius: 20px; padding: 20px; border: 1px solid #edf2f7; margin-top: 25px; margin-bottom: 20px; }
@@ -126,7 +126,8 @@
 
         .day-block { background: #fafafa; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 20px; }
         .day-title { font-size: 14px; font-weight: 700; color: #ea580c; border-bottom: 2px solid #f97316; padding-bottom: 4px; margin-bottom: 10px; }
-        .schedule-select { width: 100%; padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; background:#fff; }
+        .schedule-select { width: 100%; padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background:#fff; font-weight: 600; color: #1e293b; }
+        .schedule-select.collision-danger { border: 2px solid #ef4444 !important; background-color: #fee2e2 !important; color: #b91c1c; }
 
         .bottom-nav-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; height: 65px; background-color: #ffffff; border-radius: 20px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); z-index: 1000; border: 1px solid #e2e8f0; }
         .nav-tab { display: flex; flex-direction: column; align-items: center; color: #94a3b8; text-decoration: none; font-size: 11px; font-weight: 600; cursor: pointer; }
@@ -189,8 +190,8 @@
                 <div class="info"><h3>إدارة الهيئة التدريسية وحساباتها</h3><p id="mainTeacherCount">جاري التحميل سحابياً...</p></div>
                 <i class="fas fa-chalkboard-teacher" style="font-size:26px; opacity:0.3"></i>
             </div>
-            <div class="color-card card-orange" id="cardSchedule" onclick="openModal('scheduleModal'); generateSchoolScheduleGrid();">
-                <div class="info"><h3>جدول الدروس الذكي والمربوط</h3><p>ربط شامل (مدرسين + حصص + قاعات)</p></div>
+            <div class="color-card card-orange" id="cardSchedule" onclick="openModal('scheduleModal'); loadAndBuildSchedule();">
+                <div class="info"><h3>جدول الدروس الذكي والمربوط</h3><p>ربط شامل (منع تضارب المدرسين تلقائياً)</p></div>
                 <i class="fas fa-calendar-alt" style="font-size:26px; opacity:0.3"></i>
             </div>
             <div class="color-card card-red" id="cardAttendance" onclick="openModal('attendanceModal'); prepareAttendanceForm();">
@@ -367,7 +368,7 @@
                     <h3><i class="fas fa-key"></i> بيانات المدرسين الحالية وجداول الحصص المرتبطة</h3>
                     <div class="excel-table-wrapper">
                         <table class="excel-table">
-                            <thead><tr><th>كود المدرس</th><th>المدرس</th><th>الاختصاص</th><th>الحصص المقررة</th><th>الحصص المتبقية</th><th>حساب الدخول</th><th>الاستراحة</th><th>حذف</th></tr></thead>
+                            <thead><tr><th>كود المدرس</th><th>المدرس</th><th>الاختصاص</th><th>الحصص المقررة</th><th>حساب الدخول</th><th>الاستراحة</th><th>حذف</th></tr></thead>
                             <tbody id="teacherTableBody"></tbody>
                         </table>
                     </div>
@@ -378,13 +379,13 @@
         <div class="modal-overlay" id="scheduleModal">
             <div class="modal-content" style="max-width: 900px;">
                 <button class="close-modal-btn" onclick="closeModal('scheduleModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#f97316;"><i class="fas fa-calendar-alt"></i> جدول الدروس الأوتوماتيكي المربوط ذكياً</h2>
+                <h2 style="font-size:16px; font-weight:700; color:#f97316;"><i class="fas fa-calendar-alt"></i> جدول الدروس الأوتوماتيكي المربوط ذكياً بسحابة Firebase</h2>
                 <div class="form-panel">
                     <div class="grid-2">
                         <div class="form-group"><label>وقت بدء الدوام اليومي</label><input type="time" id="startTime" value="08:00"></div>
                         <div class="form-group"><label>مدة الدرس الواحدة (بالدقائق)</label><input type="number" id="lessonDuration" value="45"></div>
                     </div>
-                    <button type="button" class="btn-action btn-orange" onclick="generateSchoolScheduleGrid()"><i class="fas fa-sync"></i> إعادة بناء وتوليد هيكلية الجدول بناءً على القاعات المدخلة</button>
+                    <button type="button" class="btn-action btn-orange" onclick="rebuildAndClearSchedule()"><i class="fas fa-sync"></i> إعادة بناء وتصفير هيكلية الجدول سحابياً</button>
                 </div>
                 <div id="dynamicScheduleContainer"></div>
             </div>
@@ -500,7 +501,7 @@
                         <input type="text" id="schoolRoomsConfig" value="قاعة 1, قاعة 2, قاعة 3, قاعة 4" onchange="refreshSystemRooms()">
                     </div>
                     
-                    <button type="button" class="btn-action btn-teal" onclick="closeModal('settingsModal'); alert('تم حفظ وتحديث القاعات والمعايير بنجاح.')">حفظ التغييرات وقفل اللوحة</button>
+                    <button type="button" class="btn-action btn-teal" onclick="closeModal('settingsModal'); alert('تم حفظ وتحديث القاعات بنجاح.')">حفظ التغييرات وقفل اللوحة</button>
                 </div>
             </div>
         </div>
@@ -508,7 +509,7 @@
         <div class="bottom-nav-bar" id="bottomNavBar">
             <div class="nav-tab" id="navTabStudents" onclick="openModal('studentsModal')"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i><span style="color:#3b82f6;">الطلاب</span></div>
             <div class="nav-tab" id="navTabTeachers" onclick="openModal('teachersModal')"><i class="fas fa-chalkboard-teacher"></i><span>المدرسين</span></div>
-            <div class="nav-tab" id="navTabSchedule" onclick="openModal('scheduleModal'); generateSchoolScheduleGrid();"><i class="fas fa-calendar-alt"></i><span>الجداول</span></div>
+            <div class="nav-tab" id="navTabSchedule" onclick="openModal('scheduleModal'); loadAndBuildSchedule();"><i class="fas fa-calendar-alt"></i><span>الجداول</span></div>
             <div class="nav-tab" id="navTabAttendance" onclick="openModal('attendanceModal'); prepareAttendanceForm();"><i class="fas fa-qrcode"></i><span>الغيابات</span></div>
             <div class="nav-tab" id="navTabNotices" onclick="openModal('noticesModal')"><i class="fas fa-bullhorn"></i><span>التبليغات</span></div>
             <div class="nav-tab" id="navTabSettings" onclick="openModal('settingsModal')"><i class="fas fa-cog"></i><span>الإعدادات</span></div>
@@ -533,6 +534,8 @@
         let teachersDatabase = {};
         let attendanceArchive = [];
         let noticesDatabase = [];
+        let globalScheduleDatabase = {}; 
+
         let globalStudentCounter = 0;
         let globalTeacherCounter = 0;
         let videoStream = null;
@@ -570,6 +573,15 @@
                 });
                 globalTeacherCounter = maxId;
                 renderTeachers();
+                checkScheduleCollisions(); 
+            });
+
+            db.collection("schedule").onSnapshot((snapshot) => {
+                globalScheduleDatabase = {};
+                snapshot.forEach((doc) => {
+                    globalScheduleDatabase[doc.id] = doc.data().teacherId;
+                });
+                applySavedScheduleToUI();
             });
 
             db.collection("attendance").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
@@ -873,7 +885,7 @@
             if(restDays.length === 0) restDays.push("لا يوجد");
 
             db.collection("teachers").doc(nextId.toString()).set({
-                id: nextId, code: autoGeneratedCode, name, spec, phone, lessons: totalLessons, remainingLessons: totalLessons, rooms, restDays, username, password
+                id: nextId, code: autoGeneratedCode, name, spec, phone, lessons: totalLessons, rooms, restDays, username, password
             }).then(() => {
                 alert("تم رفع المدرس الجديد وتوليد حسابه السحابي.");
                 document.getElementById('teacherForm').reset();
@@ -886,7 +898,7 @@
             const tbody = document.getElementById('teacherTableBody'); tbody.innerHTML = "";
             Object.values(teachersDatabase).forEach(tc => {
                 let restBadges = tc.restDays.map(d => `<span class="rest-badge">${d}</span>`).join(' ');
-                tbody.innerHTML += `<tr><td><code>${tc.code}</code></td><td><strong>${tc.name}</strong></td><td><span class="spec-badge">${tc.spec}</span></td><td><b>${tc.lessons} حصة</b></td><td><span class="room-badge">${tc.remainingLessons} متبقية</span></td><td><span class="account-badge">${tc.username}</span></td><td>${restBadges}</td><td><button style="border:none; width:32px; height:32px; border-radius:8px; background-color:#fee2e2; color:#dc2626;" onclick="deleteTeacher(${tc.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td><code>${tc.code}</code></td><td><strong>${tc.name}</strong></td><td><span class="spec-badge">${tc.spec}</span></td><td><b>${tc.lessons} حصة</b></td><td><span class="account-badge">${tc.username}</span></td><td>${restBadges}</td><td><button style="border:none; width:32px; height:32px; border-radius:8px; background-color:#fee2e2; color:#dc2626;" onclick="deleteTeacher(${tc.id})"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             document.getElementById('mainTeacherCount').innerText = `${Object.keys(teachersDatabase).length} مدرسين`;
         }
@@ -895,7 +907,8 @@
             if(confirm("حذف المدرس نهائياً من قاعدة البيانات السحابية؟")) { db.collection("teachers").doc(id.toString()).delete(); }
         }
 
-        function generateSchoolScheduleGrid() {
+        // --- نظام بناء وإدارة الجدول الذكي السحابي ---
+        function loadAndBuildSchedule() {
             const container = document.getElementById('dynamicScheduleContainer'); container.innerHTML = "";
             const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
             const roomsInput = document.getElementById('schoolRoomsConfig').value;
@@ -920,12 +933,25 @@
                     currentMinutes += duration;
                     let endH = Math.floor(currentMinutes / 60).toString().padStart(2, '0'); let endM = (currentMinutes % 60).toString().padStart(2, '0');
                     tr.innerHTML = `<td><b>الدرس ${lessonIndex}</b> <span style="font-size:10px; display:block;">(${startH}:${startM})</span></td>`;
+                    
                     roomsArr.forEach(room => {
-                        let td = document.createElement('td'); let select = document.createElement('select'); select.className = 'schedule-select';
-                        select.setAttribute('data-day', day); select.setAttribute('data-lesson', lessonIndex); select.setAttribute('data-room', room);
+                        let td = document.createElement('td'); 
+                        let select = document.createElement('select'); 
+                        select.className = 'schedule-select';
+                        let docId = `${day}_${lessonIndex}_${room}`.replace(/ /g, "_");
+                        select.setAttribute('id', docId);
+                        select.setAttribute('data-day', day); 
+                        select.setAttribute('data-lesson', lessonIndex); 
+                        select.setAttribute('data-room', room);
+                        
+                        // عند تغيير المدرس، يتم الرفع فوراً إلى Firebase
+                        select.setAttribute('onchange', `saveScheduleCell('${docId}')`);
+                        
                         select.innerHTML = `<option value="">شاغر</option>`;
                         Object.values(teachersDatabase).forEach(tc => {
-                            if (!tc.restDays.includes(day)) { select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; }
+                            if (!tc.restDays.includes(day)) { 
+                                select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; 
+                            }
                         });
                         td.appendChild(select); tr.appendChild(td);
                     });
@@ -933,11 +959,77 @@
                 }
                 table.appendChild(tbody); wrapper.appendChild(table); dayBlock.appendChild(wrapper); container.appendChild(dayBlock);
             });
+            applySavedScheduleToUI();
+        }
+
+        function saveScheduleCell(docId) {
+            if(currentSessionRole !== 'manager') {
+                alert("عذراً، المدير فقط من يملك صلاحية تعديل جدول الحصص.");
+                applySavedScheduleToUI();
+                return;
+            }
+            const selectEl = document.getElementById(docId);
+            const val = selectEl.value;
+            if(val === "") {
+                db.collection("schedule").doc(docId).delete();
+            } else {
+                db.collection("schedule").doc(docId).set({ teacherId: val });
+            }
+        }
+
+        function applySavedScheduleToUI() {
+            Object.keys(globalScheduleDatabase).forEach(docId => {
+                const el = document.getElementById(docId);
+                if(el) { el.value = globalScheduleDatabase[docId]; }
+            });
+            checkScheduleCollisions();
+        }
+
+        // خوارزمية فحص ومنع تضارب المدرسين في نفس الحصة
+        function checkScheduleCollisions() {
+            const selects = document.querySelectorAll('.schedule-select');
+            selects.forEach(el => el.classList.remove('collision-danger'));
+
+            const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
+            days.forEach(day => {
+                for(let lesson = 1; lesson <= 5; lesson++) {
+                    let teacherCountInLesson = {};
+                    selects.forEach(el => {
+                        if(el.getAttribute('data-day') === day && parseInt(el.getAttribute('data-lesson')) === lesson) {
+                            let val = el.value;
+                            if(val !== "") {
+                                if(!teacherCountInLesson[val]) teacherCountInLesson[val] = [];
+                                teacherCountInLesson[val].push(el);
+                            }
+                        }
+                    });
+                    Object.keys(teacherCountInLesson).forEach(tId => {
+                        if(teacherCountInLesson[tId].length > 1) {
+                            teacherCountInLesson[tId].forEach(el => {
+                                el.classList.add('collision-danger');
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function rebuildAndClearSchedule() {
+            if(confirm("هل أنت متأكد من تصفير الجدول وحذف جميع توزيعات المدرسين الحالية من السحابة؟")) {
+                db.collection("schedule").get().then((snapshot) => {
+                    let batch = db.batch();
+                    snapshot.forEach(doc => batch.delete(doc.ref));
+                    batch.commit().then(() => {
+                        alert("تم تصفير الجدول سحابياً بنجاح.");
+                        loadAndBuildSchedule();
+                    });
+                });
+            }
         }
 
         function prepareAttendanceForm() {
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
-            scannedPresentStudentIds = []; renderClassLiveStatusTable();
+            renderClassLiveStatusTable();
         }
 
         function renderClassLiveStatusTable() {
