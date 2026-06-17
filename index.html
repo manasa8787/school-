@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق مدرستي - النظام الإداري الموحد الشامل</title>
+    <title>تطبيق مدرستي - النظام الإداري الموحد السحابي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 
@@ -61,7 +65,6 @@
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        /* حاوية كاميرا الهاتف الخلفية لتصوير الطلاب */
         .camera-container { display: none; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: #f8fafc; border: 2px dashed #3b82f6; border-radius: 14px; }
         .camera-container video { width: 100%; max-width: 280px; border-radius: 12px; }
         .camera-preview-img { width: 95px; height: 95px; border-radius: 12px; object-fit: cover; border: 2px solid #cbd5e1; display: none; margin: 10px auto; }
@@ -107,7 +110,7 @@
         .status-present { color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 6px; border-radius: 6px; }
         .status-absent { color: #dc2626; font-weight: bold; background: #fee2e2; padding: 2px 6px; border-radius: 6px; }
 
-        /* تصميم الهوية الاحترافية المحدث بأسلوب Apple Style الراقي */
+        /* تصميم الهوية الاحترافية المحدث بأسلوب Apple Style */
         .identity-card-wrapper { display: none; background: white; padding: 20px; border-radius: 24px; border: 1px solid #edf2f7; text-align: center; margin-bottom: 20px; }
         .student-id-card-vertical { width: 290px; height: 460px; background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 24px; padding: 22px; margin: 15px auto; text-align: center; position: relative; border: 2.5px solid #3b82f6; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25); }
         .id-vertical-header { width: 100%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; }
@@ -132,11 +135,10 @@
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول الموحدة -->
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
             <div class="login-logo"><i class="fas fa-shield-alt"></i></div>
-            <h2 style="font-size:18px; font-weight:900; margin-bottom:5px;">بوابة الدخول الموحدة</h2>
+            <h2 style="font-size:18px; font-weight:900; margin-bottom:5px;">بوابة الدخول الموحدة السحابية</h2>
             <p style="font-size:12px; color:#64748b; margin-bottom:20px;">نظام مدرستي الإداري الذكي</p>
             
             <div class="login-tabs">
@@ -166,7 +168,6 @@
         </div>
     </div>
 
-    <!-- واجهة التطبيق الرئيسية -->
     <div class="main-app-content" id="mainAppContent">
         <div class="app-header">
             <div class="welcome-text">
@@ -181,11 +182,11 @@
 
         <div class="cards-column">
             <div class="color-card card-blue" id="cardStudents" onclick="openModal('studentsModal')">
-                <div class="info"><h3>شؤون الطلاب والهويات</h3><p id="mainStudentCount">0 طالباً</p></div>
+                <div class="info"><h3>شؤون الطلاب والهويات</h3><p id="mainStudentCount">جاري التحميل سحابياً...</p></div>
                 <i class="fas fa-user-graduate" style="font-size:26px; opacity:0.3"></i>
             </div>
             <div class="color-card card-purple" id="cardTeachers" onclick="openModal('teachersModal')">
-                <div class="info"><h3>إدارة الهيئة التدريسية وحساباتها</h3><p id="mainTeacherCount">0 مدرسين</p></div>
+                <div class="info"><h3>إدارة الهيئة التدريسية وحساباتها</h3><p id="mainTeacherCount">جاري التحميل سحابياً...</p></div>
                 <i class="fas fa-chalkboard-teacher" style="font-size:26px; opacity:0.3"></i>
             </div>
             <div class="color-card card-orange" id="cardSchedule" onclick="openModal('scheduleModal'); generateSchoolScheduleGrid();">
@@ -193,7 +194,7 @@
                 <i class="fas fa-calendar-alt" style="font-size:26px; opacity:0.3"></i>
             </div>
             <div class="color-card card-red" id="cardAttendance" onclick="openModal('attendanceModal'); prepareAttendanceForm();">
-                <div class="info"><h3>جهاز الـ QR والغيابات لداخل القاعة</h3><p id="mainAbsencesCount">0 غيابات مرسلة للإدارة</p></div>
+                <div class="info"><h3>جهاز الـ QR والغيابات لداخل القاعة</h3><p id="mainAbsencesCount">جاري التحميل سحابياً...</p></div>
                 <i class="fas fa-qrcode" style="font-size:26px; opacity:0.3"></i>
             </div>
             <div class="color-card card-dark" id="cardNotices" onclick="openModal('noticesModal')">
@@ -206,11 +207,10 @@
             </div>
         </div>
 
-        <!-- 1. نافذة الطلاب المطورة والمحدثة بالمراحل بالكامل -->
         <div class="modal-overlay" id="studentsModal">
             <div class="modal-content">
                 <button class="close-modal-btn" onclick="closeModal('studentsModal'); stopCamera();"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700;"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i> إدارة الطلاب والملفات</h2>
+                <h2 style="font-size:16px; font-weight:700;"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i> إدارة الطلاب والملفات (مربوط بالـ Firebase)</h2>
                 
                 <div class="form-panel">
                     <div class="form-title"><i class="fas fa-user-plus"></i> <span id="formActionTitle">إضافة طالب جديد وتوليد بيانات الهوية</span></div>
@@ -231,18 +231,15 @@
                             <div class="form-group">
                                 <label>المرحلة الدراسية</label>
                                 <select id="studentLevel" required>
-                                    <!-- المرحلة الابتدائية -->
                                     <option value="الأول الابتدائي">الأول الابتدائي</option>
                                     <option value="الثاني الابتدائي">الثاني الابتدائي</option>
                                     <option value="الثالث الابتدائي">الثالث الابتدائي</option>
                                     <option value="الرابع الابتدائي">الرابع الابتدائي</option>
                                     <option value="الخامس الابتدائي">الخامس الابتدائي</option>
                                     <option value="السادس الابتدائي">السادس الابتدائي</option>
-                                    <!-- المرحلة المتوسطة -->
                                     <option value="الأول المتوسط">الأول المتوسط</option>
                                     <option value="الثاني المتوسط">الثاني المتوسط</option>
                                     <option value="الثالث المتوسط">الثالث المتوسط</option>
-                                    <!-- المرحلة الإعدادية -->
                                     <option value="الرابع الإعدادي">الرابع الإعدادي</option>
                                     <option value="الخامس الإعدادي">الخامس الإعدادي</option>
                                     <option value="السادس الإعدادي">السادس الإعدادي</option>
@@ -269,7 +266,7 @@
                             <input type="hidden" id="studentPhotoBase64" value="">
                         </div>
                         
-                        <button type="submit" class="btn-action btn-blue" id="submitBtn"><i class="fas fa-save"></i> حفظ الطالب وتوليد الـ QR والهوية</button>
+                        <button type="submit" class="btn-action btn-blue" id="submitBtn"><i class="fas fa-save"></i> حفظ سحابي وتوليد الـ QR والهوية</button>
                         <button type="button" class="btn-action btn-dark" id="cancelEditBtn" style="display:none; margin-top:8px;" onclick="resetStudentForm()">إلغاء التعديل</button>
                     </form>
                 </div>
@@ -302,7 +299,6 @@
                     </div>
                 </div>
 
-                <!-- معاينة وطباعة الهوية الاحترافية للطالب -->
                 <div class="identity-card-wrapper" id="idWrapper">
                     <h3 style="font-size:14px; margin-bottom:10px; color:#1e293b;"><i class="fas fa-id-badge"></i> هوية الطالب الاحترافية المعتمدة لداخل القاعة</h3>
                     <div class="student-id-card-vertical" id="printableIdCard">
@@ -330,15 +326,14 @@
             </div>
         </div>
 
-        <!-- 2. نافذة إدارة المدرسين -->
         <div class="modal-overlay" id="teachersModal">
             <div class="modal-content">
                 <button class="close-modal-btn" onclick="closeModal('teachersModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#8b5cf6;"><i class="fas fa-chalkboard-teacher"></i> إدارة المدرسين وتوليد الحسابات والجداول</h2>
+                <h2 style="font-size:16px; font-weight:700; color:#8b5cf6;"><i class="fas fa-chalkboard-teacher"></i> إدارة المدرسين وتوليد الحسابات السحابية</h2>
                 <div class="form-panel">
                     <form id="teacherForm" onsubmit="handleTeacherSubmit(event)">
                         <div class="grid-2">
-                            <div class="form-group"><label>اسم المدرس الثلاثي</label><input type="text" id="teacherName" required></div>
+                            <div class="form-group"><label>اسم المدرس الثلاثي</label><input type="text" id="teacherNameInput" required></div>
                             <div class="form-group">
                                 <label>الاختصاص الدراسي (المادة)</label>
                                 <select id="teacherSpec" required>
@@ -387,11 +382,10 @@
             </div>
         </div>
 
-        <!-- 3. نافذة جدول الدروس الأوتوماتيكي الذكي -->
         <div class="modal-overlay" id="scheduleModal">
             <div class="modal-content" style="max-width: 900px;">
                 <button class="close-modal-btn" onclick="closeModal('scheduleModal')"><i class="fas fa-times"></i></button>
-                <h2 style="font-size:16px; font-weight:700; color:#f97316;"><i class="fas fa-calendar-alt"></i> جدول الدروس الأوتوماتيكي المربوط ذكياً بالفلاتر والقاعات</h2>
+                <h2 style="font-size:16px; font-weight:700; color:#f97316;"><i class="fas fa-calendar-alt"></i> جدول الدروس الأوتوماتيكي المربوط ذكياً</h2>
                 <div class="form-panel">
                     <div class="grid-2">
                         <div class="form-group"><label>وقت بدء الدوام اليومي</label><input type="time" id="startTime" value="08:00"></div>
@@ -403,7 +397,6 @@
             </div>
         </div>
 
-        <!-- 4. نافذة الغيابات اليومية عبر الكاميرا والـ QR لداخل القاعة -->
         <div class="modal-overlay" id="attendanceModal">
             <div class="modal-content">
                 <button class="close-modal-btn" onclick="closeModal('attendanceModal'); stopQRReader();"><i class="fas fa-times"></i></button>
@@ -445,15 +438,11 @@
                         </table>
                     </div>
                     
-                    <button type="button" class="btn-action btn-red" style="margin-top:15px;" onclick="saveDailyAttendance()"><i class="fas fa-paper-plane"></i> إرسال الأسماء الغائبة فوراً إلى الإدارة وقفل الكشف</button>
+                    <button type="button" class="btn-action btn-red" style="margin-top:15px;" onclick="saveDailyAttendance()"><i class="fas fa-paper-plane"></i> إرسال الأسماء الغائبة فوراً إلى السحابة وقفل الكشف</button>
                 </div>
 
                 <div class="excel-panel" id="adminAbsenceArchivePanel">
                     <h3><i class="fas fa-university"></i> صندوق الغيابات المستلمة لدى الإدارة العامة</h3>
-                    <div class="export-buttons-group">
-                        <button class="btn-export btn-excel-today" onclick="exportTodayAbsencesToExcel()"><i class="fas fa-calendar-day"></i> تصدير غيابات اليوم فقط (Excel)</button>
-                        <button class="btn-export btn-excel" onclick="exportAllAbsencesArchiveToExcel()"><i class="fas fa-mail-bulk"></i> تصدير الأرشيف الكلي (Excel)</button>
-                    </div>
                     <div class="excel-table-wrapper">
                         <table class="excel-table">
                             <thead><tr><th>التاريخ</th><th>اليوم</th><th>القاعة</th><th>الطالب المستبين غيابه</th><th>الحالة</th><th>حذف</th></tr></thead>
@@ -464,7 +453,6 @@
             </div>
         </div>
 
-        <!-- 5. لوحة التبليغات والتعاميم -->
         <div class="modal-overlay" id="noticesModal">
             <div class="modal-content">
                 <button class="close-modal-btn" onclick="closeModal('noticesModal')"><i class="fas fa-times"></i></button>
@@ -503,7 +491,6 @@
             </div>
         </div>
 
-        <!-- 6. لوحة التحكم والإعدادات المتقدمة لإدارة القاعات -->
         <div class="modal-overlay" id="settingsModal">
             <div class="modal-content">
                 <button class="close-modal-btn" onclick="closeModal('settingsModal')"><i class="fas fa-times"></i></button>
@@ -525,7 +512,6 @@
             </div>
         </div>
 
-        <!-- شريط التنقل السفلي الموحد الثابت -->
         <div class="bottom-nav-bar" id="bottomNavBar">
             <div class="nav-tab" id="navTabStudents" onclick="openModal('studentsModal')"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i><span style="color:#3b82f6;">الطلاب</span></div>
             <div class="nav-tab" id="navTabTeachers" onclick="openModal('teachersModal')"><i class="fas fa-chalkboard-teacher"></i><span>المدرسين</span></div>
@@ -537,29 +523,92 @@
     </div>
 
     <script>
-        // قواعد البيانات والمصفوفات العامة
-        let studentsDatabase = {};
-        let teachersDatabase = {
-            "1": { id: 1, code: "TCH-2026-1", name: "احمد علي حسن", spec: "الفيزياء", phone: "07700000000", lessons: 12, remainingLessons: 12, rooms: "قاعة 1", restDays: ["الجمعة"], username: "teacher_1", password: "123" }
+        // --- 1. إعدادات سحابة Firebase ---
+        // استبدل هذه الإعدادات ببيانات مشروعك الخاصة من لوحة تحكم Firebase لقفل التطبيق بنجاح
+        const firebaseConfig = {
+            apiKey: "AIzaSyAs-YOUR-KEY-HERE",
+            authDomain: "your-project-id.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
         };
+
+        // تهيئة الـ Firebase سحابياً للعمل
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // مصفوفات وقواعد بيانات الواجهة
+        let studentsDatabase = {};
+        let teachersDatabase = {};
         let attendanceArchive = [];
         let noticesDatabase = [];
         let globalStudentCounter = 0;
-        let globalTeacherCounter = 1;
+        let globalTeacherCounter = 0;
         let videoStream = null;
         let html5QrScanner = null;
         const defaultPhoto = "https://via.placeholder.com/105?text=صورة";
-        let scheduleState = [];
         let scannedPresentStudentIds = [];
-        
         let currentSessionRole = "";
         let currentTeacherSessionName = "";
 
         window.onload = function() {
             refreshSystemRooms();
-            renderTeachers();
+            listenToCloudData(); // تشغيل ميزة الاستماع اللحظي للبيانات السحابية
         };
 
+        // --- 2. الاستماع اللحظي لسحابة Firebase (Realtime Synchronization) ---
+        function listenToCloudData() {
+            // الاستماع للطلاب
+            db.collection("students").onSnapshot((snapshot) => {
+                studentsDatabase = {};
+                let maxId = 0;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    studentsDatabase[data.id] = data;
+                    if(parseInt(data.id) > maxId) maxId = parseInt(data.id);
+                });
+                globalStudentCounter = maxId;
+                renderStudents(studentsDatabase);
+            });
+
+            // الاستماع للمدرسين
+            db.collection("teachers").onSnapshot((snapshot) => {
+                teachersDatabase = {};
+                let maxId = 0;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    teachersDatabase[data.id] = data;
+                    if(parseInt(data.id) > maxId) maxId = parseInt(data.id);
+                });
+                globalTeacherCounter = maxId;
+                renderTeachers();
+            });
+
+            // الاستماع للغيابات
+            db.collection("attendance").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                attendanceArchive = [];
+                snapshot.forEach((doc) => {
+                    let data = doc.data();
+                    data.firebaseDocId = doc.id; // للاستخدام عند الحذف
+                    attendanceArchive.push(data);
+                });
+                renderAttendanceArchive();
+            });
+
+            // الاستماع للتبليغات
+            db.collection("notices").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                noticesDatabase = [];
+                snapshot.forEach((doc) => {
+                    let data = doc.data();
+                    data.firebaseDocId = doc.id;
+                    noticesDatabase.push(data);
+                });
+                renderNotices();
+            });
+        }
+
+        // --- 3. بقية دوال النظام والتحكم والدخول الموحد ---
         function switchLoginTab(type) {
             document.querySelectorAll('.login-tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.login-form-wrapper').forEach(form => form.classList.remove('active'));
@@ -595,7 +644,7 @@
                 currentTeacherSessionName = matchedTeacher.name;
                 initializeSession();
             } else {
-                alert("❌ هذا الاسم غير مسجل حالياً بالنظام.");
+                alert("❌ هذا الاسم غير مسجل حالياً بالسيستم سحابياً.");
             }
         }
 
@@ -606,7 +655,7 @@
             const subtext = document.getElementById('userRoleSubtext');
 
             if(currentSessionRole === 'manager') {
-                subtext.innerText = "لوحة التحكم الشاملة - المدير العام للمنظومة";
+                subtext.innerText = "لوحة التحكم السحابية - المدير العام للمنظومة";
                 roleIcon.innerHTML = `<i class="fas fa-user-shield"></i>`;
                 document.getElementById('cardStudents').style.display = "flex";
                 document.getElementById('cardTeachers').style.display = "flex";
@@ -637,12 +686,10 @@
         }
 
         function logoutSystem() {
-            currentSessionRole = "";
-            currentTeacherSessionName = "";
+            currentSessionRole = ""; currentTeacherSessionName = "";
             document.getElementById('mainAppContent').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
-            stopCamera();
-            stopQRReader();
+            stopCamera(); stopQRReader();
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
@@ -671,16 +718,10 @@
             const wrapper = document.getElementById('cameraWrapper');
             const video = document.getElementById('videoFeed');
             wrapper.style.display = 'flex';
-            
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(function(stream) {
-                    videoStream = stream;
-                    video.srcObject = stream;
-                })
-                .catch(function(error) {
-                    alert("تعذر فتح الكاميرا الخلفية، يرجى إعطاء الصلاحيات الكافية للمتصفح.");
-                });
+                .then(function(stream) { videoStream = stream; video.srcObject = stream; })
+                .catch(function(error) { alert("تعذر فتح الكاميرا الخلفية الهاتفية."); });
             }
         }
 
@@ -722,6 +763,7 @@
             document.getElementById('weeklyLessonsTotal').value = classes * perClass;
         }
 
+        // --- 4. معالجة عمليات الطلاب المربوطة بـ Firebase السحابي ---
         function handleStudentSubmit(event) {
             event.preventDefault();
             const id = document.getElementById('editStudentId').value;
@@ -730,19 +772,27 @@
             const mother = document.getElementById('motherName').value;
             const level = document.getElementById('studentLevel').value;
             const room = document.getElementById('studentRoom').value;
-            let photo = document.getElementById('studentPhotoBase64').value;
-            if (!photo) { photo = defaultPhoto; }
+            let photo = document.getElementById('studentPhotoBase64').value || defaultPhoto;
 
             if (id) {
-                const oldToken = studentsDatabase[id].qrToken;
-                studentsDatabase[id] = { id: parseInt(id), name, phone, mother, level, room, photo, qrToken: oldToken };
-                alert("تم تحديث السجل والهوية بنجاح.");
+                // تعديل سحابي في Firestore
+                db.collection("students").doc(id.toString()).update({
+                    name, phone, mother, level, room, photo
+                }).then(() => {
+                    alert("تم تحديث حساب الطالب سحابياً بنجاح.");
+                });
             } else {
-                globalStudentCounter++;
-                const generatedQRToken = `STUDENT-ID:${globalStudentCounter}`;
-                studentsDatabase[globalStudentCounter] = { id: globalStudentCounter, name, phone, mother, level, room, photo, qrToken: generatedQRToken };
+                // إضافة جديدة سحابياً
+                const nextId = globalStudentCounter + 1;
+                const generatedQRToken = `STUDENT-ID:${nextId}`;
+                
+                db.collection("students").doc(nextId.toString()).set({
+                    id: nextId, name, phone, mother, level, room, photo, qrToken: generatedQRToken
+                }).then(() => {
+                    alert("تم حفظ الطالب الجديد وتوليد بياناته سحابياً.");
+                });
             }
-            resetStudentForm(); renderStudents(studentsDatabase);
+            resetStudentForm();
         }
 
         function resetStudentForm() {
@@ -751,7 +801,7 @@
             document.getElementById('studentPhotoBase64').value = "";
             document.getElementById('cameraPreview').style.display = "none";
             document.getElementById('formActionTitle').innerText = "إضافة طالب جديد وتوليد بيانات الهوية";
-            document.getElementById('submitBtn').innerHTML = `<i class="fas fa-save"></i> حفظ الطالب وتوليد الـ QR والهوية`;
+            document.getElementById('submitBtn').innerHTML = `<i class="fas fa-save"></i> حفظ سحابي وتوليد الـ QR والهوية`;
             document.getElementById('cancelEditBtn').style.display = "none";
             stopCamera();
         }
@@ -767,7 +817,7 @@
                     <td>${st.phone}</td>
                     <td>
                         <button class="btn-table-action btn-edit" onclick="editStudent(${st.id})" title="تعديل"><i class="fas fa-edit"></i></button>
-                        <button class="btn-table-action btn-print" onclick="showStudentID(${st.id})" title="الهوية الاحترافية والـ QR"><i class="fas fa-id-card"></i> الهوية</button>
+                        <button class="btn-table-action btn-print" onclick="showStudentID(${st.id})" title="الهوية"><i class="fas fa-id-card"></i> الهوية</button>
                         <button class="btn-table-action btn-delete" onclick="deleteStudent(${st.id})" title="حذف"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
@@ -789,16 +839,18 @@
                     document.getElementById('cameraPreview').src = st.photo;
                     document.getElementById('cameraPreview').style.display = "block";
                 }
-                document.getElementById('formActionTitle').innerText = "تعديل بيانات الطالب الحالية";
-                document.getElementById('submitBtn').innerHTML = `<i class="fas fa-check-double"></i> تحديث الحساب`;
+                document.getElementById('formActionTitle').innerText = "تعديل بيانات الطالب الحالية سحابياً";
+                document.getElementById('submitBtn').innerHTML = `<i class="fas fa-check-double"></i> تحديث وتعديل السحابي`;
                 document.getElementById('cancelEditBtn').style.display = "block";
                 document.getElementById('studentsModal').scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
         function deleteStudent(id) {
-            if(confirm("هل أنت متأكد من حذف هذا الطالب نهائياً من النظام؟")) {
-                delete studentsDatabase[id]; renderStudents(studentsDatabase);
+            if(confirm("هل أنت متأكد من حذف الطالب نهائياً من الـ Firebase؟")) {
+                db.collection("students").doc(id.toString()).delete().then(() => {
+                    alert("تم الحذف من السحابة بنجاح.");
+                });
                 document.getElementById('idWrapper').style.display = 'none';
             }
         }
@@ -813,7 +865,6 @@
 
         function showStudentID(id) {
             const student = studentsDatabase[id]; if(!student) return;
-
             document.getElementById('idWrapper').style.display = 'block';
             document.getElementById('idCardName').innerText = student.name;
             document.getElementById('idCardLevel').innerText = student.level;
@@ -827,38 +878,28 @@
             document.getElementById('idWrapper').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function exportStudentsToExcel() {
-            if(Object.keys(studentsDatabase).length === 0) { alert("السجل فارغ."); return; }
-            let rows = [];
-            Object.values(studentsDatabase).forEach(st => {
-                rows.push({ "معرف الطالب": st.id, "اسم الطالب": st.name, "المرحلة": st.level, "القاعة": st.room, "الهاتف": st.phone, "اسم الأم": st.mother, "رمز الكيور المولد": st.qrToken });
-            });
-            const worksheet = XLSX.utils.json_to_sheet(rows); const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "سجل الطلاب"); XLSX.writeFile(workbook, "سجل_الطلاب_الشامل_2026.xlsx");
-        }
-
-        function exportStudentsToPDF() {
-            if(Object.keys(studentsDatabase).length === 0) { alert("السجل فارغ."); return; }
-            const element = document.getElementById('pdfPrintArea');
-            const opt = { margin: 10, filename: 'سجل_الطلاب_الموحد.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-            html2pdf().set(opt).from(element).save();
-        }
-
+        // --- 5. معالجة عمليات المدرسين والجداول على الـ Firebase ---
         function handleTeacherSubmit(event) {
-            event.preventDefault(); globalTeacherCounter++;
-            const name = document.getElementById('teacherName').value;
+            event.preventDefault();
+            const nextId = globalTeacherCounter + 1;
+            const name = document.getElementById('teacherNameInput').value;
             const spec = document.getElementById('teacherSpec').value;
             const phone = document.getElementById('teacherPhone').value;
             const totalLessons = parseInt(document.getElementById('weeklyLessonsTotal').value) || 0;
             const rooms = document.getElementById('teacherRooms').value;
-            const autoGeneratedCode = `TCH-2026-${globalTeacherCounter}`;
-            const username = `teacher_${globalTeacherCounter}`; const password = generateRandomPassword(6);
+            const autoGeneratedCode = `TCH-2026-${nextId}`;
+            const username = `teacher_${nextId}`; const password = generateRandomPassword(6);
             let restDays = []; document.querySelectorAll('input[name="restDays"]:checked').forEach(cb => restDays.push(cb.value));
             if(restDays.length === 0) restDays.push("لا يوجد");
 
-            teachersDatabase[globalTeacherCounter] = { id: globalTeacherCounter, code: autoGeneratedCode, name, spec, phone, lessons: totalLessons, remainingLessons: totalLessons, rooms, restDays, username, password };
-            document.getElementById('teacherForm').reset(); document.getElementById('noRestCheck').checked = false;
-            toggleNoRest(document.getElementById('noRestCheck')); calculateLessonsTotal(); renderTeachers();
+            db.collection("teachers").doc(nextId.toString()).set({
+                id: nextId, code: autoGeneratedCode, name, spec, phone, lessons: totalLessons, remainingLessons: totalLessons, rooms, restDays, username, password
+            }).then(() => {
+                alert("تم رفع المدرس الجديد وتوليد حسابه السحابي.");
+                document.getElementById('teacherForm').reset();
+                document.getElementById('noRestCheck').checked = false;
+                toggleNoRest(document.getElementById('noRestCheck')); calculateLessonsTotal();
+            });
         }
 
         function renderTeachers() {
@@ -869,11 +910,15 @@
             });
             document.getElementById('mainTeacherCount').innerText = `${Object.keys(teachersDatabase).length} مدرسين`;
         }
-        function deleteTeacher(id) { delete teachersDatabase[id]; renderTeachers(); }
-        function resetTeachersRemainingLessons() { Object.values(teachersDatabase).forEach(tc => { tc.remainingLessons = tc.lessons; }); }
+
+        function deleteTeacher(id) {
+            if(confirm("حذف المدرس نهائياً من قاعدة البيانات السحابية؟")) {
+                db.collection("teachers").doc(id.toString()).delete();
+            }
+        }
 
         function generateSchoolScheduleGrid() {
-            resetTeachersRemainingLessons(); const container = document.getElementById('dynamicScheduleContainer'); container.innerHTML = "";
+            const container = document.getElementById('dynamicScheduleContainer'); container.innerHTML = "";
             const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
             const roomsInput = document.getElementById('schoolRoomsConfig').value;
             const roomsArr = roomsInput.split(',').map(r => r.trim()).filter(r => r !== "");
@@ -900,39 +945,21 @@
                     roomsArr.forEach(room => {
                         let td = document.createElement('td'); let select = document.createElement('select'); select.className = 'schedule-select';
                         select.setAttribute('data-day', day); select.setAttribute('data-lesson', lessonIndex); select.setAttribute('data-room', room);
-                        select.onchange = function() { updateScheduleLogic(); };
+                        select.innerHTML = `<option value="">شاغر</option>`;
+                        Object.values(teachersDatabase).forEach(tc => {
+                            if (!tc.restDays.includes(day)) {
+                                select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`;
+                            }
+                        });
                         td.appendChild(select); tr.appendChild(td);
                     });
                     tbody.appendChild(tr); currentMinutes += 5;
                 }
                 table.appendChild(tbody); wrapper.appendChild(table); dayBlock.appendChild(wrapper); container.appendChild(dayBlock);
             });
-            updateScheduleLogic();
         }
 
-        function updateScheduleLogic() {
-            resetTeachersRemainingLessons(); const allSelects = document.querySelectorAll('.schedule-select');
-            allSelects.forEach(sel => {
-                let val = sel.value; if (val && teachersDatabase[val]) { if (teachersDatabase[val].remainingLessons > 0) teachersDatabase[val].remainingLessons--; }
-            });
-            allSelects.forEach(currentSelect => {
-                const currentDay = currentSelect.getAttribute('data-day'); const currentLesson = currentSelect.getAttribute('data-lesson');
-                const savedValue = currentSelect.value; let busyTeachers = [];
-                allSelects.forEach(otherSelect => {
-                    if (otherSelect !== currentSelect) {
-                        if (otherSelect.getAttribute('data-day') === currentDay && otherSelect.getAttribute('data-lesson') === currentLesson && otherSelect.value !== "") { busyTeachers.push(otherSelect.value); }
-                    }
-                });
-                currentSelect.innerHTML = `<option value="">شاغر</option>`;
-                Object.values(teachersDatabase).forEach(tc => {
-                    if (!tc.restDays.includes(currentDay) && (tc.remainingLessons > 0 || savedValue == tc.id) && !busyTeachers.includes(tc.id.toString())) {
-                        currentSelect.innerHTML += `<option value="${tc.id}" ${savedValue == tc.id ? "selected" : ""}>${tc.name} (${tc.spec})</option>`;
-                    }
-                });
-            });
-            renderTeachers();
-        }
-
+        // --- 6. غيابات الـ QR والمسح اللحظي مربوط سحابياً ---
         function prepareAttendanceForm() {
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
             scannedPresentStudentIds = []; renderClassLiveStatusTable();
@@ -983,41 +1010,77 @@
         }
 
         function saveDailyAttendance() {
-            const currentRoom = document.getElementById('attendanceRoomFilter').value; const date = document.getElementById('attendanceDate').value;
-            let absentCounter = 0;
+            const currentRoom = document.getElementById('attendanceRoomFilter').value;
+            const date = document.getElementById('attendanceDate').value;
+            let batch = db.batch();
+
             Object.values(studentsDatabase).forEach(st => {
                 if (st.room === currentRoom && !scannedPresentStudentIds.includes(st.id)) {
-                    absentCounter++;
-                    attendanceArchive.push({ id: Date.now() + Math.random(), date, dayName: "اليوم", roomName: currentRoom, studentName: st.name, status: "غائب" });
+                    let newDocRef = db.collection("attendance").doc();
+                    batch.set(newDocRef, {
+                        date, dayName: "اليوم", roomName: currentRoom, studentName: st.name, status: "غائب", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
             });
-            stopQRReader(); alert(`تم حفظ وقفل الكشف بنجاح! الغيابات: ${absentCounter}`); renderAttendanceArchive();
+
+            batch.commit().then(() => {
+                stopQRReader(); alert("تم إرسال وقفل الكشف في السحابة بنجاح!");
+            });
         }
 
         function renderAttendanceArchive() {
             const tbody = document.getElementById('attendanceArchiveTableBody'); tbody.innerHTML = "";
             attendanceArchive.forEach(rec => {
-                tbody.innerHTML += `<tr><td><code>${rec.date}</code></td><td>${rec.dayName}</td><td>${rec.roomName}</td><td><strong>${rec.studentName}</strong></td><td><span class="status-absent">غائب</span></td><td><button style="border:none; width:32px; height:32px; background-color:#fee2e2; color:#dc2626;" onclick="deleteAttendanceRecord(${rec.id})"><i class="fas fa-times"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td><code>${rec.date}</code></td><td>${rec.dayName}</td><td>${rec.roomName}</td><td><strong>${rec.studentName}</strong></td><td><span class="status-absent">غائب</span></td><td><button style="border:none; width:32px; height:32px; background-color:#fee2e2; color:#dc2626;" onclick="deleteAttendanceRecord('${rec.firebaseDocId}')"><i class="fas fa-times"></i></button></td></tr>`;
             });
             document.getElementById('mainAbsencesCount').innerText = `${attendanceArchive.length} غيابات`;
         }
-        function deleteAttendanceRecord(id) { attendanceArchive = attendanceArchive.filter(r => r.id !== id); renderAttendanceArchive(); }
 
+        function deleteAttendanceRecord(docId) {
+            if(confirm("حذف هذا السجل الغيابي من السحابة؟")) {
+                db.collection("attendance").doc(docId).delete();
+            }
+        }
+
+        // --- 7. التبليغات السحابية ---
         function handleNoticeSubmit(event) {
             event.preventDefault();
             const title = document.getElementById('noticeTitle').value; const target = document.getElementById('noticeTarget').value; const body = document.getElementById('noticeBody').value;
-            noticesDatabase.push({ id: Date.now(), date: new Date().toLocaleDateString('ar-IQ'), title, target, body });
-            document.getElementById('noticeForm').reset(); renderNotices();
+            
+            db.collection("notices").add({
+                date: new Date().toLocaleDateString('ar-IQ'), title, target, body, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('noticeForm').reset();
+                alert("تم نشر التعميم والتبليغ سحابياً بنجاح.");
+            });
         }
 
         function renderNotices() {
             const tbody = document.getElementById('noticesTableBody'); tbody.innerHTML = "";
             noticesDatabase.forEach(nt => {
-                tbody.innerHTML += `<tr><td><code>${nt.date}</code></td><td><strong>${nt.title}</strong></td><td><span class="notice-badge">${nt.target}</span></td><td>${nt.body}</td><td><button style="border:none; width:32px; height:32px; background-color:#fee2e2; color:#dc2626;" onclick="deleteNotice(${nt.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td><code>${nt.date}</code></td><td><strong>${nt.title}</strong></td><td><span class="notice-badge">${nt.target}</span></td><td>${nt.body}</td><td><button style="border:none; width:32px; height:32px; background-color:#fee2e2; color:#dc2626;" onclick="deleteNotice('${nt.firebaseDocId}')"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             document.getElementById('mainNoticesCount').innerText = `${noticesDatabase.length} تبليغات`;
         }
-        function deleteNotice(id) { noticesDatabase = noticesDatabase.filter(r => r.id !== id); renderNotices(); }
+
+        function deleteNotice(docId) {
+            if(confirm("حذف هذا التبليغ نهائياً؟")) {
+                db.collection("notices").doc(docId).delete();
+            }
+        }
+
+        // دوال التصدير للملفات الخارجية
+        function exportStudentsToExcel() {
+            if(Object.keys(studentsDatabase).length === 0) { alert("السجل فارغ."); return; }
+            let rows = []; Object.values(studentsDatabase).forEach(st => { rows.push({ "معرف الطالب": st.id, "اسم الطالب": st.name, "المرحلة": st.level, "القاعة": st.room, "الهاتف": st.phone, "اسم الأم": st.mother, "رمز الكيور المولد": st.qrToken }); });
+            const worksheet = XLSX.utils.json_to_sheet(rows); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "سجل الطلاب"); XLSX.writeFile(workbook, "سجل_الطلاب_السحابي.xlsx");
+        }
+        function exportStudentsToPDF() {
+            if(Object.keys(studentsDatabase).length === 0) { alert("السجل فارغ."); return; }
+            const element = document.getElementById('pdfPrintArea');
+            const opt = { margin: 10, filename: 'سجل_الطلاب_الموحد.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+            html2pdf().set(opt).from(element).save();
+        }
     </script>
 </body>
 </html>
