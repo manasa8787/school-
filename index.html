@@ -523,15 +523,14 @@
     </div>
 
     <script>
-        // --- 1. إعدادات سحابة Firebase ---
-        // استبدل هذه الإعدادات ببيانات مشروعك الخاصة من لوحة تحكم Firebase لقفل التطبيق بنجاح
+        // --- 1. إعدادات سحابة Firebase الرسمية الخاصة بمشروعك الحقيقي ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-YOUR-KEY-HERE",
-            authDomain: "your-project-id.firebaseapp.com",
-            projectId: "your-project-id",
-            storageBucket: "your-project-id.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
+            apiKey: "AIzaSyAIg9wqTc4HYwIocwvx72yOobdYm5W2DNA",
+            authDomain: "school-ad54a.firebaseapp.com",
+            projectId: "school-ad54a",
+            storageBucket: "school-ad54a.firebasestorage.app",
+            messagingSenderId: "441942501233",
+            appId: "1:441942501233:web:e96e023c2271ba9085f8d0"
         };
 
         // تهيئة الـ Firebase سحابياً للعمل
@@ -554,7 +553,7 @@
 
         window.onload = function() {
             refreshSystemRooms();
-            listenToCloudData(); // تشغيل ميزة الاستماع اللحظي للبيانات السحابية
+            listenToCloudData(); // تشغيل ميزة المزامنة والاستماع اللحظي للبيانات السحابية
         };
 
         // --- 2. الاستماع اللحظي لسحابة Firebase (Realtime Synchronization) ---
@@ -1064,23 +1063,4 @@
         }
 
         function deleteNotice(docId) {
-            if(confirm("حذف هذا التبليغ نهائياً؟")) {
-                db.collection("notices").doc(docId).delete();
-            }
-        }
-
-        // دوال التصدير للملفات الخارجية
-        function exportStudentsToExcel() {
-            if(Object.keys(studentsDatabase).length === 0) { alert("السجل فارغ."); return; }
-            let rows = []; Object.values(studentsDatabase).forEach(st => { rows.push({ "معرف الطالب": st.id, "اسم الطالب": st.name, "المرحلة": st.level, "القاعة": st.room, "الهاتف": st.phone, "اسم الأم": st.mother, "رمز الكيور المولد": st.qrToken }); });
-            const worksheet = XLSX.utils.json_to_sheet(rows); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "سجل الطلاب"); XLSX.writeFile(workbook, "سجل_الطلاب_السحابي.xlsx");
-        }
-        function exportStudentsToPDF() {
-            if(Object.keys(studentsDatabase).length === 0) { alert("السجل فارغ."); return; }
-            const element = document.getElementById('pdfPrintArea');
-            const opt = { margin: 10, filename: 'سجل_الطلاب_الموحد.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-            html2pdf().set(opt).from(element).save();
-        }
-    </script>
-</body>
-</html>
+            if(confirm
