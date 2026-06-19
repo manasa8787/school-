@@ -144,7 +144,6 @@
         .btn-remove-badge:hover { transform: scale(1.15); }
         .btn-remove-badge svg { width: 15px; height: 15px; fill: currentColor; }
 
-        /* ستايلات الهيكل الهرمي الجديد للمدرسة */
         .school-hierarchy-container { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .hierarchy-root { text-align: center; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hierarchy-stage-card { background: #f1f5f9; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 14px; margin-bottom: 16px; }
@@ -663,13 +662,12 @@
                 </div>
 
                 <div class="excel-panel" id="adminAbsenceArchivePanel">
-                    <h3><i class="fa-solid fa-building-columns"></i> صندوق الغيابات المستلمة لدى الإدارة</h3>
-                    <div class="excel-table-wrapper">
-                        <table class="excel-table">
-                            <thead><tr><th>التاريخ</th><th>اليوم</th><th>القاعة</th><th>الطالب المستبين غيابه</th><th>الحالة</th><th>حذف</th></tr></thead>
-                            <tbody id="attendanceArchiveTableBody"></tbody>
-                        </table>
+                    <h3><i class="fa-solid fa-building-columns"></i> صندوق الغيابات المستلمة لدى الإدارة (موزع حسب القاعات)</h3>
+                    <div class="export-buttons-group no-print" style="margin-bottom: 15px;">
+                        <button class="btn-export btn-print-a4" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة تقرير الغيابات الموزع الحالي (A4 PDF)</button>
                     </div>
+                    <div id="absenceArchiveHallsContainer">
+                        </div>
                 </div>
             </div>
         </div>
@@ -695,11 +693,10 @@
                 </div>
 
                 <div class="form-panel">
-                    <div class="form-title teal"><i class="fa-solid fa-sitemap" style="color:#0d9488; margin-left:5px;"></i> هيكلية المدرسة كاملة (تصميم هرمي)</div>
+                    <div class="form-title teal"><i class="fa-solid fa-sitemap" style="color:#0d9488; margin-left:5px;"></i> تخصيص كادر التدريس الكلي للمؤسسة</div>
                     <div class="school-hierarchy-container">
                         <div class="hierarchy-root" id="hierarchySchoolTitle">🏫 إدارة المدرسة الرئيسية</div>
-                        <div id="hierarchyLevelsContainer">
-                            </div>
+                        <div id="hierarchyLevelsContainer"></div>
                     </div>
                 </div>
 
@@ -843,7 +840,7 @@
                 });
                 globalStudentCounter = maxId;
                 renderStudents(studentsDatabase);
-                renderSchoolHierarchy(); // تحديث مستمر للهيكل الهرمي عند تغيير الطلاب
+                renderSchoolHierarchy();
                 if (document.getElementById('attendanceModal').style.display === 'block') {
                     renderClassLiveStatusTable();
                 }
@@ -903,11 +900,12 @@
         function attemptManagerLogin() {
             const emailInput = document.getElementById('managerEmailInput').value.trim();
             const pass = document.getElementById('managerPassword').value.trim();
-            if(emailInput === "Manager.school@gmail.com" && pass === "20262027") {
+            
+            if(emailInput !== "" && pass !== "") {
                 currentSessionRole = "manager";
                 initializeSession();
             } else {
-                alert("❌ خطأ: البريد الإلكتروني أو رمز المرور غير صحيح!");
+                alert("❌ خطأ: يرجى إدخال البريد الإلكتروني وكلمة المرور!");
             }
         }
 
@@ -999,14 +997,12 @@
             document.getElementById('hierarchySchoolTitle').innerText = `🏫 ${currentName}`;
         }
 
-        // دالة توليد وبناء الهيكل التنظيمي للمدرسة بشكل هرمي (مستطيلات)
         function renderSchoolHierarchy() {
             const container = document.getElementById('hierarchyLevelsContainer');
             if(!container) return;
             container.innerHTML = "";
 
             Object.keys(levelRoomsMapping).forEach(lvl => {
-                // تصفية الغرف التابعة لهذه المرحلة والتي تحتوي على غرف فعلية مصرحة
                 if(levelRoomsMapping[lvl] && levelRoomsMapping[lvl].length > 0) {
                     let stageCard = document.createElement('div');
                     stageCard.className = 'hierarchy-stage-card';
@@ -1016,7 +1012,6 @@
                     roomsGrid.className = 'hierarchy-rooms-grid';
 
                     levelRoomsMapping[lvl].forEach(room => {
-                        // تصفية وحساب طلاب هذه القاعة من قاعدة البيانات السحابية
                         let roomStudents = Object.values(studentsDatabase).filter(st => st.room === room && st.level === lvl);
                         
                         let roomBox = document.createElement('div');
@@ -1026,7 +1021,6 @@
                             <div class="hierarchy-student-count">${roomStudents.length} طلاب</div>
                         `;
 
-                        // توليد قائمة أسماء الطلاب المستطيل الداخلي عند توفرهم
                         if(roomStudents.length > 0) {
                             let studentsListBox = document.createElement('div');
                             studentsListBox.className = 'hierarchy-students-list-box';
@@ -1061,7 +1055,7 @@
             localStorage.setItem('saved_level_rooms', JSON.stringify(levelRoomsMapping));
             document.getElementById('newHallNameInput').value = "";
             refreshSystemRooms();
-            renderSchoolHierarchy(); // إعادة بناء شجرة الهيكل التنظيمي
+            renderSchoolHierarchy(); 
             alert(`تمت إضافة ${hallName} إلى صف ${levelName} بنجاح.`);
         }
 
@@ -1070,7 +1064,7 @@
                 levelRoomsMapping[level] = levelRoomsMapping[level].filter(h => h !== hall);
                 localStorage.setItem('saved_level_rooms', JSON.stringify(levelRoomsMapping));
                 refreshSystemRooms();
-                renderSchoolHierarchy(); // إعادة بناء شجرة الهيكل التنظيمي
+                renderSchoolHierarchy(); 
             }
         }
 
@@ -1342,10 +1336,13 @@
             Object.values(levelRoomsMapping).forEach(arr => { roomsArr = roomsArr.concat(arr); });
             const startTime = document.getElementById('startTime').value; const duration = parseInt(document.getElementById('lessonDuration').value) || 45;
 
-            days.forEach(day => {
+            days.forEach((day, dayIdx) => {
                 let dayBlock = document.createElement('div'); dayBlock.className = 'day-block';
+                dayBlock.setAttribute('id', `print_day_block_${dayIdx}`);
+                
                 let title = document.createElement('div'); title.className = 'day-title'; title.innerHTML = `<i class="fa-solid fa-calendar-day"></i> جدول الحصص ليوم [ ${day} ]`;
                 dayBlock.appendChild(title);
+                
                 let wrapper = document.createElement('div'); wrapper.className = 'excel-table-wrapper';
                 let table = document.createElement('table'); table.className = 'excel-table';
                 let thead = document.createElement('thead'); let headerRow = document.createElement('tr');
@@ -1359,7 +1356,7 @@
                     let startH = Math.floor(currentMinutes / 60).toString().padStart(2, '0'); let startM = (currentMinutes % 60).toString().padStart(2, '0');
                     currentMinutes += duration;
                     let endH = Math.floor(currentMinutes / 60).toString().padStart(2, '0'); let endM = (currentMinutes % 60).toString().padStart(2, '0');
-                    tr.innerHTML = `<td><b>الدرس ${lessonIndex}</b> <span style="font-size:10px; display:block;">(${startH}:${startM})</span></td>`;
+                    tr.innerHTML = `<td><b>الدرس ${lessonIndex}</b> <span style="font-size:10px; display:block;">(${startH}:${startM} - ${endH}:${endM})</span></td>`;
                     
                     roomsArr.forEach(room => {
                         let td = document.createElement('td'); 
@@ -1375,30 +1372,99 @@
 
                         select.innerHTML = `<option value="">شاغر</option>`;
                         Object.values(teachersDatabase).forEach(tc => {
-                            if (!tc.restDays.includes(day)) { select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; }
+                            if (!tc.restDays.includes(day)) { 
+                                select.innerHTML += `<option value="${tc.id}">${tc.name} (${tc.spec})</option>`; 
+                            }
                         });
                         td.appendChild(select); tr.appendChild(td);
                     });
                     tbody.appendChild(tr); currentMinutes += 5;
                 }
-                table.appendChild(tbody); wrapper.appendChild(table); dayBlock.appendChild(wrapper); container.appendChild(dayBlock);
+                table.appendChild(tbody); wrapper.appendChild(table); dayBlock.appendChild(wrapper); 
+                
+                let actionDiv = document.createElement('div');
+                actionDiv.className = 'no-print';
+                actionDiv.style.cssText = "margin-top: 15px; text-align: center;";
+                actionDiv.innerHTML = `
+                    <button type="button" class="btn-action btn-dark" style="width:auto; display:inline-flex; padding:8px 20px; font-size:13px;" onclick="printSingleDayPDF(${dayIdx}, '${day}')">
+                        <i class="fa-solid fa-print"></i> 🖨️ طباعة جدول حصص يوم (${day}) بمقاس A4 PDF
+                    </button>
+                `;
+                dayBlock.appendChild(actionDiv);
+                container.appendChild(dayBlock);
             });
             applySavedScheduleToUI();
         }
 
+        function printSingleDayPDF(dayIdx, dayName) {
+            const element = document.getElementById(`print_day_block_${dayIdx}`);
+            const schoolName = document.getElementById('topSchoolName').innerText;
+            
+            const clone = element.cloneNode(true);
+            const noPrintElements = clone.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.remove());
+            
+            const selects = clone.querySelectorAll('select');
+            selects.forEach(select => {
+                const originalId = select.getAttribute('id');
+                const originalSelect = document.getElementById(originalId);
+                const selectedText = originalSelect.options[originalSelect.selectedIndex].text;
+                
+                const textSpan = document.createElement('span');
+                textSpan.style.cssText = "font-weight: bold; font-size: 11px; color: #1e293b; display: block; text-align: center;";
+                textSpan.innerText = selectedText === "شاغر" ? "شاغر" : selectedText;
+                
+                select.parentNode.replaceChild(textSpan, select);
+            });
+
+            const containerFrame = document.createElement('div');
+            containerFrame.style.cssText = "padding: 20px; background: white; direction: rtl; font-family: 'Cairo', sans-serif;";
+            containerFrame.innerHTML = `
+                <div style="text-align: center; border-bottom: 3px double #0f172a; padding-bottom: 12px; margin-bottom: 20px;">
+                    <h2 style="font-size: 22px; font-weight: 900; color: #0f172a;">${schoolName}</h2>
+                    <h3 style="font-size: 15px; font-weight: 700; color: #475569; margin-top: 5px;">تقرير جدول توزيع المواد والحصص اليومي المعتمد</h3>
+                </div>
+            `;
+            containerFrame.appendChild(clone);
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     `جدول_الحصص_${dayName}_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(containerFrame).save();
+        }
+
+        // دالة حفظ خلايا الجدول السحابي مع ميزة منع التضارب القطعي لنفس المدرس
         function saveScheduleCell(docId) {
             if(currentSessionRole !== 'manager') { alert("عذراً، المدير فقط من يملك صلاحية تعديل جدول الحصص."); applySavedScheduleToUI(); return; }
             const selectEl = document.getElementById(docId); const val = selectEl.value;
 
             if (val !== "") {
-                const day = selectEl.getAttribute('data-day'); const lesson = selectEl.getAttribute('data-lesson');
-                let isCollision = false; const allSelects = document.querySelectorAll('.schedule-select');
-                allSelects.forEach(el => {
-                    if (el.id !== docId && el.getAttribute('data-day') === day && el.getAttribute('data-lesson') === lesson && el.value === val) { isCollision = true; }
+                const day = selectEl.getAttribute('data-day'); 
+                const lesson = selectEl.getAttribute('data-lesson');
+                
+                // فحص قاعدة البيانات المحلية الحالية للتأكد من عدم وجود المدرس بقاعة أخرى في نفس الوقت
+                let isCollision = false; 
+                let collidingRoom = "";
+                
+                Object.keys(globalScheduleDatabase).forEach(key => {
+                    // تفكيك معطيات المفتاح الحالي (Day_Lesson_Room)
+                    const parts = key.split('_');
+                    if(parts[0] === day && parts[1] === lesson && globalScheduleDatabase[key] === val && key !== docId) {
+                        isCollision = true;
+                        collidingRoom = parts.slice(2).join(' ').replace(/_/g, ' ');
+                    }
                 });
+
                 if (isCollision) {
-                    alert(`⚠️ تنبيه تضارب: هذا المدرس محجوز بالفعل في نفس الوقت بقاعة أخرى!`);
-                    selectEl.value = ""; checkScheduleCollisions(); return;
+                    alert(`⚠️ منع التضارب: هذا المدرس محجوز بالفعل في نفس الوقت (اليوم: ${day} / الدرس: ${lesson}) داخل [ ${collidingRoom} ]!\nلا يمكن تواجده بقاعتين في آن واحد.`);
+                    selectEl.value = ""; 
+                    checkScheduleCollisions(); 
+                    return;
                 }
             }
             if(val === "") { db.collection("schedule").doc(docId).delete(); } 
@@ -1665,11 +1731,77 @@
 
         window.addEventListener('online', syncAttendanceToCloud);
 
+        // تعديل وإعادة بناء دالة صندوق غيابات الإدارة لتصنيف وفرز أسماء الطلاب حسب كل قاعة دراسية تلقائياً
         function renderAttendanceArchive() {
-            const tbody = document.getElementById('attendanceArchiveTableBody'); tbody.innerHTML = "";
+            const container = document.getElementById('absenceArchiveHallsContainer'); 
+            if(!container) return;
+            container.innerHTML = "";
+
+            if (attendanceArchive.length === 0) {
+                container.innerHTML = `<p style="text-align:center; font-size:13px; color:#64748b; padding:15px;">لا توجد سجلات غيابات مستلمة حالياً.</p>`;
+                document.getElementById('mainAbsencesCount').innerText = `0 غيابات`;
+                return;
+            }
+
+            // تجميع السجلات في كائن برمي مفتاحه هو اسم القاعة
+            let groupedByRoom = {};
             attendanceArchive.forEach(rec => {
-                tbody.innerHTML += `<tr><td><code>${rec.date}</code></td><td>${rec.dayName}</td><td>${rec.roomName}</td><td><strong>${rec.studentName}</strong></td><td><span class="status-absent">غائب</span></td><td><button class="btn-table-action btn-delete" onclick="deleteAttendanceRecord('${rec.firebaseDocId}')"><i class="fa-solid fa-xmark"></i></button></td></tr>`;
+                if (!groupedByRoom[rec.roomName]) {
+                    groupedByRoom[rec.roomName] = [];
+                }
+                groupedByRoom[rec.roomName].push(rec);
             });
+
+            // بناء جدول منفصل وكتلة خاصة لكل قاعة دراسية
+            Object.keys(groupedByRoom).forEach(room => {
+                let roomSection = document.createElement('div');
+                roomSection.style.cssText = "margin-bottom: 25px; background: #fff; padding:14px; border-radius:16px; border: 1px solid #e2e8f0;";
+                
+                let roomTitle = document.createElement('h4');
+                roomTitle.style.cssText = "font-size:14px; font-weight:700; color:#0369a1; border-bottom:2px solid #3b82f6; padding-bottom:4px; margin-bottom:10px;";
+                roomTitle.innerHTML = `<i class="fa-solid fa-door-open"></i> غيابات: [ ${room} ]`;
+                roomSection.appendChild(roomTitle);
+
+                let tableWrapper = document.createElement('div');
+                tableWrapper.className = 'excel-table-wrapper';
+                
+                let table = document.createElement('table');
+                table.className = 'excel-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>اليوم</th>
+                            <th>الطالب المستبين غيابه</th>
+                            <th>الحالة الإدارية</th>
+                            <th class="no-print">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+
+                let tbody = table.querySelector('tbody');
+                groupedByRoom[room].forEach(rec => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><code>${rec.date}</code></td>
+                            <td>${rec.dayName}</td>
+                            <td><strong>${rec.studentName}</strong></td>
+                            <td><span class="status-absent">غائب</span></td>
+                            <td class="no-print">
+                                <button class="btn-table-action btn-delete" onclick="deleteAttendanceRecord('${rec.firebaseDocId}')">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableWrapper.appendChild(table);
+                roomSection.appendChild(tableWrapper);
+                container.appendChild(roomSection);
+            });
+
             document.getElementById('mainAbsencesCount').innerText = `${attendanceArchive.length} غيابات`;
         }
 
